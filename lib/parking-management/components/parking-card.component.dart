@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartparking_mobile_application/reservations/views/reservation-view.dart';
 import '../../rating-and-review/views/reviews_view.dart';
 import '../models/parking.entity.dart';
+import 'package:smartparking_mobile_application/shared/i18n.dart';
 
 class ParkingCard extends StatelessWidget {
   final Parking parking;
@@ -29,7 +30,7 @@ class ParkingCard extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Center(
                   child: Text(
-                    'Parking Details',
+                    tr('parking.details_title'),
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -41,15 +42,19 @@ class ParkingCard extends StatelessWidget {
               const Divider(height: 1, color: Colors.grey, thickness: 2),
               // Parking image
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
                 child: AspectRatio(
-                  aspectRatio: 16/9,
-                  child: parking.imageUrl?.isNotEmpty == true
+                  aspectRatio: 16 / 9,
+                  child:
+                  parking.imageUrl?.isNotEmpty == true
                       ? Image.network(
                     parking.imageUrl!,
                     fit: BoxFit.cover,
                     errorBuilder:
-                        (context, error, stackTrace) => _buildDefaultImage(),
+                        (context, error, stackTrace) =>
+                        _buildDefaultImage(),
                   )
                       : _buildDefaultImage(),
                 ),
@@ -102,10 +107,14 @@ class ParkingCard extends StatelessWidget {
                     // Parking price with money icon
                     Row(
                       children: [
-                        Icon(Icons.attach_money, size: 20, color: Colors.green[700]),
+                        Icon(
+                          Icons.attach_money,
+                          size: 20,
+                          color: Colors.green[700],
+                        ),
                         const SizedBox(width: 4),
                         Text(
-                          '\$${parking.ratePerHour.toStringAsFixed(2)}/hour',
+                          '\$${parking.ratePerHour.toStringAsFixed(2)}/${tr('form.hours_label')}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -119,7 +128,9 @@ class ParkingCard extends StatelessWidget {
                       children: [
                         ...List.generate(5, (index) {
                           return Icon(
-                            index < parking.rating.floor() ? Icons.star : Icons.star_border,
+                            index < parking.rating.floor()
+                                ? Icons.star
+                                : Icons.star_border,
                             color: Colors.amber,
                             size: 20,
                           );
@@ -135,10 +146,16 @@ class ParkingCard extends StatelessWidget {
                     // Available spots with parking icon
                     Row(
                       children: [
-                        Icon(Icons.local_parking, size: 20, color: Colors.blue[700]),
+                        Icon(
+                          Icons.local_parking,
+                          size: 20,
+                          color: Colors.blue[700],
+                        ),
                         const SizedBox(width: 4),
                         Text(
-                          '${parking.availableSpots} available / ${parking.totalSpots} total',
+                          tr('parking.spots_format')
+                              .replaceFirst('{available}', parking.availableSpots.toString())
+                              .replaceFirst('{total}', parking.totalSpots.toString()),
                           style: const TextStyle(color: Colors.black87),
                         ),
                       ],
@@ -149,32 +166,49 @@ class ParkingCard extends StatelessWidget {
                       children: [
                         if (parking.covered)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 6,
+                            ),
                             margin: const EdgeInsets.only(right: 8),
                             decoration: BoxDecoration(
                               color: Colors.green[50],
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
-                              children: const [
-                                Icon(Icons.roofing, size: 16, color: Colors.green),
-                                SizedBox(width: 6),
-                                Text('Cubierto', style: TextStyle(fontSize: 12)),
+                              children: [
+                                const Icon(
+                                  Icons.roofing,
+                                  size: 16,
+                                  color: Colors.green,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  tr('parking.filter.covered'),
+                                  style: const TextStyle(fontSize: 12),
+                                ),
                               ],
                             ),
                           ),
                         if (parking.open24)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.orange[50],
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
-                              children: const [
-                                Icon(Icons.schedule, size: 16, color: Colors.orange),
-                                SizedBox(width: 6),
-                                Text('24h', style: TextStyle(fontSize: 12)),
+                              children: [
+                                const Icon(
+                                  Icons.schedule,
+                                  size: 16,
+                                  color: Colors.orange,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(tr('parking.filter.open24'), style: const TextStyle(fontSize: 12)),
                               ],
                             ),
                           ),
@@ -189,34 +223,43 @@ class ParkingCard extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ParkingReservationPage(parking: parking),
+                              builder:
+                                  (context) =>
+                                  ParkingReservationPage(parking: parking),
                             ),
                           );
                         },
                         style: ButtonStyle(
-                          backgroundColor: const MaterialStatePropertyAll<Color>(
+                          backgroundColor:
+                          const MaterialStatePropertyAll<Color>(
                             Colors.blue,
                           ),
-                          shape: const MaterialStatePropertyAll<RoundedRectangleBorder>(
+                          shape: const MaterialStatePropertyAll<
+                              RoundedRectangleBorder
+                          >(
                             RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(16),
+                              ),
                             ),
                           ),
-                          padding: MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 12)),
+                          padding: MaterialStateProperty.all(
+                            const EdgeInsets.symmetric(vertical: 12),
+                          ),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "Reserve Now",
-                              style: TextStyle(
+                              tr('parking.reserve_now'),
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.white,
                               ),
                             ),
-                            SizedBox(width: 8),
-                            Icon(
+                            const SizedBox(width: 8),
+                            const Icon(
                               Icons.calendar_today,
                               color: Colors.white,
                               size: 18,
@@ -234,7 +277,8 @@ class ParkingCard extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ReviewsView(
+                              builder:
+                                  (context) => ReviewsView(
                                 parkingId: parking.id,
                                 title: "${parking.name} Reviews",
                               ),
@@ -245,18 +289,24 @@ class ParkingCard extends StatelessWidget {
                           side: MaterialStateProperty.all(
                             BorderSide(color: Colors.blue.shade700),
                           ),
-                          shape: const MaterialStatePropertyAll<RoundedRectangleBorder>(
+                          shape: const MaterialStatePropertyAll<
+                              RoundedRectangleBorder
+                          >(
                             RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(16),
+                              ),
                             ),
                           ),
-                          padding: MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 12)),
+                          padding: MaterialStateProperty.all(
+                            const EdgeInsets.symmetric(vertical: 12),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "View Reviews",
+                              tr('parking.view_reviews'),
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,

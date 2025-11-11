@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart' as gl;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
 import 'package:smartparking_mobile_application/parking-management/components/parking-card.component.dart';
 import 'package:smartparking_mobile_application/parking-management/services/parking.service.dart';
 import 'package:smartparking_mobile_application/shared/components/navigator-bar.dart';
+import 'package:smartparking_mobile_application/shared/i18n.dart';
 import '../models/parking.entity.dart';
 
 class ParkingMap extends StatefulWidget {
@@ -36,52 +36,29 @@ class _ParkingMapState extends State<ParkingMap> {
   @override
   void initState() {
     super.initState();
-    _initialize();
-  }
 
-  @override
-  void dispose() {
-    userLocationStream?.cancel();
-    _searchController.dispose();
-    super.dispose();
-  }
+    // Start tracking user location and load initial parking data.
+    // We load all parkings initially so markers are visible on the map.
+    // If you prefer to show no markers until a user searches, remove the
+    // following load and keep only location tracking.
+    _startLocationTracking().catchError((e) => debugPrint('Location init error: $e'));
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      if (index == 1) {
-        // 'Reseñas' — route to reviews screen
-        Navigator.pushReplacementNamed(context, '/reviews');
-      } else if (index == 2) {
-        Navigator.pushReplacementNamed(context, '/reservations');
-      } else if (index == 3) {
-        Navigator.pushReplacementNamed(context, '/profile');
-      }
-    });
-  }
-
-  Future<void> _initialize() async {
-    mp.MapboxOptions.setAccessToken(dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '');
-    await _fetchParkingData();
-    await _startLocationTracking();
-  }
-
-  Future<void> _fetchParkingData() async {
-    try {
-      final data = await _parkingService.get();
-      final parkings =
-      data.map<Parking>((item) => Parking.fromJson(item)).toList();
+    _parkingService
+        .search()
+        .then((data) {
+      final list = data.map<Parking>((item) => Parking.fromJson(item)).toList();
       setState(() {
-        _parkingList.addAll(parkings);
+        _parkingList.clear();
+        _parkingList.addAll(list);
         _isParkingDataReady = true;
       });
 
       if (_isMapReady) {
         _createParkingMarkers();
       }
-    } catch (e) {
-      debugPrint('Error fetching parking data: $e');
-    }
+    }).catchError((e) {
+      debugPrint('Failed to load parkings: $e');
+    });
   }
 
   Future<void> _startLocationTracking() async {
@@ -226,7 +203,8 @@ class _ParkingMapState extends State<ParkingMap> {
         open24: _filter24h ? true : null,
       );
 
-      final results = data.map<Parking>((item) => Parking.fromJson(item)).toList();
+      final results =
+      data.map<Parking>((item) => Parking.fromJson(item)).toList();
 
       setState(() {
         _isSearching = false;
@@ -241,7 +219,7 @@ class _ParkingMapState extends State<ParkingMap> {
           builder: (context) {
             return SizedBox(
               height: 200,
-              child: Center(child: Text('No se encontraron parkings')),
+              child: Center(child: Text(tr('parking.no_results'))),
             );
           },
         );
@@ -294,9 +272,9 @@ class _ParkingMapState extends State<ParkingMap> {
       setState(() {
         _isSearching = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error buscando parkings: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error buscando parkings: $e')));
     }
   }
 
@@ -322,7 +300,6 @@ class _ParkingMapState extends State<ParkingMap> {
                     children: [
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
@@ -342,9 +319,8 @@ class _ParkingMapState extends State<ParkingMap> {
                                 child: TextField(
                                   controller: _searchController,
                                   textInputAction: TextInputAction.search,
-                                  onSubmitted: (_) => _searchParkings(),
-                                  decoration: const InputDecoration(
-                                    hintText: 'Buscar parking...',
+                                  decoration: InputDecoration(
+                                    hintText: tr('parking.search_hint'),
                                     border: InputBorder.none,
                                     isCollapsed: true,
                                   ),
@@ -352,11 +328,15 @@ class _ParkingMapState extends State<ParkingMap> {
                               ),
                               if (_isSearching)
                                 const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 8.0,
+                                  ),
                                   child: SizedBox(
                                     width: 18,
                                     height: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   ),
                                 ),
                             ],
@@ -389,7 +369,7 @@ class _ParkingMapState extends State<ParkingMap> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       FilterChip(
-                        label: const Text('Cubierto'),
+                        label: Text(tr('parking.filter.covered')),
                         selected: _filterCovered,
                         onSelected: (v) {
                           setState(() {
@@ -400,7 +380,7 @@ class _ParkingMapState extends State<ParkingMap> {
                       ),
                       const SizedBox(width: 6),
                       FilterChip(
-                        label: const Text('24h'),
+                        label: Text(tr('parking.filter.open24')),
                         selected: _filter24h,
                         onSelected: (v) {
                           setState(() {
@@ -430,6 +410,29 @@ class _ParkingMapState extends State<ParkingMap> {
         onItemSelected: _onItemTapped,
       ),
     );
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/reviews');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/reservations');
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(context, '/profile');
+        break;
+      default:
+        break;
+    }
   }
 }
 

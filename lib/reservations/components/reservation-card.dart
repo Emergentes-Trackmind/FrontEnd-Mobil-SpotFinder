@@ -3,12 +3,13 @@ import '../models/reservation.entity.dart';
 import '../services/reservation.service.dart';
 import 'package:smartparking_mobile_application/parking-management/services/parking.service.dart';
 import 'package:smartparking_mobile_application/reservations/views/reservation-detail.view.dart';
+import 'package:smartparking_mobile_application/shared/i18n.dart';
 
 class ReservationCard extends StatefulWidget {
   final Reservation reservation;
 
   const ReservationCard({Key? key, required this.reservation})
-    : super(key: key);
+      : super(key: key);
 
   @override
   State<ReservationCard> createState() => _ReservationCardState();
@@ -77,7 +78,7 @@ class _ReservationCardState extends State<ReservationCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isLoading ? 'Cargando...' : parkingName,
+                          isLoading ? tr('common.loading') : parkingName,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -91,7 +92,7 @@ class _ReservationCardState extends State<ReservationCard> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Ver detalles',
+                          tr('reservation.view_details'),
                           style: TextStyle(
                             color: Theme.of(context).primaryColor,
                           ),
@@ -138,9 +139,9 @@ class _ReservationCardState extends State<ReservationCard> {
 
   String _statusLabel(String s) {
     final st = s.toLowerCase();
-    if (st.contains('completed')) return 'Completada';
-    if (st.contains('confirmed') || st.contains('active')) return 'Activa';
-    if (st.contains('pending')) return 'Próxima';
+    if (st.contains('completed')) return tr('reservation.status.completed');
+    if (st.contains('confirmed') || st.contains('active')) return tr('reservation.status.active');
+    if (st.contains('pending')) return tr('reservation.status.pending');
     return s;
   }
 }

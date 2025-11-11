@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartparking_mobile_application/reservations/views/reservation-payment.dart';
+import 'package:smartparking_mobile_application/shared/i18n.dart';
 import 'package:smartparking_mobile_application/shared/components/success-dialog.component.dart';
 import '../../parking-management/components/parking-spot-viewer.dart';
 import '../../parking-management/models/parking.entity.dart';
@@ -89,16 +90,16 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
   void _reserveSpot() async {
     if (_selectedSpot == null || _startTime == null || _endTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please complete all fields before reserving.'),
+        SnackBar(
+          content: Text(tr('form.error_complete_fields')),
         ),
       );
       return;
     }
     if (_startTime == _endTime) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Start time and end time cannot be the same.'),
+        SnackBar(
+          content: Text(tr('form.error_same_times')),
         ),
       );
       return;
@@ -107,13 +108,13 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
         (_endTime!.hour == _startTime!.hour &&
             _endTime!.minute <= _startTime!.minute)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('End time must be after start time.')),
+        SnackBar(content: Text(tr('form.error_end_before_start'))),
       );
       return;
     }
     if (_vehiclePlate.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your vehicle plate.')),
+        SnackBar(content: Text(tr('form.error_enter_plate'))),
       );
       return;
     }
@@ -137,8 +138,8 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
       if (response.containsKey('id')) {
         SuccessDialog.show(
           context: context,
-          message: 'Reservation successful!',
-          buttonLabel: 'Go to Payment',
+          message: tr('form.success_reservation'),
+          buttonLabel: tr('form.go_to_payment'),
           icon: Icons.check_circle,
           onClose: () {
             Navigator.push(
@@ -157,7 +158,7 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error reserving spot: $e')));
+      ).showSnackBar(SnackBar(content: Text('${tr('form.error_reserving')}: $e')));
       return;
     }
   }
@@ -177,8 +178,8 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Vehicle Plate',
+                Text(
+                  tr('form.vehicle_plate'),
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -187,10 +188,10 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.directions_car),
-                    hintText: 'ABC-123',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.directions_car),
+                    hintText: tr('form.vehicle_plate_hint'),
+                    border: const OutlineInputBorder(),
                   ),
                   maxLength: 7,
                   onChanged: (value) {
@@ -207,8 +208,8 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Start Time',
+                        Text(
+                          tr('form.start_time'),
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -221,7 +222,7 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
                           onPressed: _pickStartTime,
                           label: Text(
                             _startTime == null
-                                ? 'Select start time'
+                                ? tr('form.select_start')
                                 : _startTime!.format(context),
                           ),
                         ),
@@ -232,8 +233,8 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'End Time',
+                        Text(
+                          tr('form.end_time'),
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -246,7 +247,7 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
                           onPressed: _pickEndTime,
                           label: Text(
                             _endTime == null
-                                ? 'Select end time'
+                                ? tr('form.select_end')
                                 : _endTime!.format(context),
                           ),
                         ),
@@ -273,8 +274,8 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
             // Selected spot
             Text(
               _selectedSpot != null
-                  ? 'Selected Spot: ${_selectedSpot!['label']}'
-                  : 'No spot selected',
+                  ? '${tr('form.selected_spot')}: ${_selectedSpot!['label']}'
+                  : tr('form.no_spot_selected'),
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -288,7 +289,7 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Total',
+                  tr('form.total'),
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -303,7 +304,7 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
                       style: const TextStyle(fontSize: 20, color: Colors.black),
                     ),
                     Text(
-                      ' / ${_totalHours.toStringAsFixed(2)} hours',
+                      ' / ${_totalHours.toStringAsFixed(2)} ${tr('form.hours_label')}',
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.lightBlue,
@@ -335,8 +336,8 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
                       ),
                       elevation: 0,
                     ),
-                    label: const Text(
-                      'Cancel',
+                    label: Text(
+                      tr('form.cancel'),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -362,8 +363,8 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
                       ),
                       elevation: 2,
                     ),
-                    label: const Text(
-                      'Reserve',
+                    label: Text(
+                      tr('form.reserve'),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,

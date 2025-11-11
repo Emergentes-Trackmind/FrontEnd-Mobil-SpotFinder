@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartparking_mobile_application/shared/i18n.dart';
 import '../models/reservation.entity.dart';
 import '../services/reservation.service.dart';
 
@@ -22,7 +23,7 @@ class _ReservationMapViewState extends State<ReservationMapView> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Reserva finalizada')));
+      ).showSnackBar(SnackBar(content: Text(tr('reservations.canceled_snack'))));
       // Redirect to the reservations screen after finalizing.
       // Use pushReplacementNamed to replace the current active reservation view
       // with the reservations list so the user sees their updated reservations.
@@ -32,7 +33,7 @@ class _ReservationMapViewState extends State<ReservationMapView> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(SnackBar(content: Text('${tr('reservations.error_canceling')}: $e')));
     }
   }
 
@@ -40,16 +41,13 @@ class _ReservationMapViewState extends State<ReservationMapView> {
     // Placeholder: you can open a dialog to select extra minutes/hours and call an API
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-        title: const Text('Extender tiempo'),
-        content: const Text(
-          'Funcionalidad de extender tiempo (placeholder).',
-        ),
+      builder: (context) => AlertDialog(
+        title: Text(tr('reservation.extend_time_title')),
+        content: Text(tr('reservation.extend_time_content')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
+            child: Text(tr('common.close')),
           ),
         ],
       ),
@@ -59,7 +57,7 @@ class _ReservationMapViewState extends State<ReservationMapView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reserva activa')),
+      appBar: AppBar(title: Text(tr('reservations.active_title'))),
       body: Column(
         children: [
           Container(
@@ -84,13 +82,13 @@ class _ReservationMapViewState extends State<ReservationMapView> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Espacio: ${widget.reservation.spotLabel}',
+                      '${tr('reservation.spot')}: ${widget.reservation.spotLabel}',
                       style: TextStyle(color: Colors.grey.shade700),
                     ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Text('Tiempo restante:'),
+                        Text('${tr('reservation.remaining_label')}: '),
                         const SizedBox(width: 8),
                         Text(
                           '${widget.reservation.startTime} - ${widget.reservation.endTime}',
@@ -117,7 +115,7 @@ class _ReservationMapViewState extends State<ReservationMapView> {
                         ),
                         elevation: 0,
                       ),
-                      child: const Text('Extender tiempo'),
+                      child: Text(tr('reservation.extend_time_title')),
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton(
@@ -135,7 +133,7 @@ class _ReservationMapViewState extends State<ReservationMapView> {
                         ),
                         elevation: 0,
                       ),
-                      child: const Text('Finalizar'),
+                      child: Text(tr('reservations.cancel_label')),
                     ),
                   ],
                 ),

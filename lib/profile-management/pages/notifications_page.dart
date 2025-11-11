@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartparking_mobile_application/shared/i18n.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -10,20 +11,20 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   final List<Map<String, String>> _items = [
     {
-      'title': 'Reserva confirmada',
-      'subtitle': 'Tu reserva para hoy a las 10:00 está confirmada',
+      'title': tr('notifications.confirmed_title'),
+      'subtitle': tr('notifications.confirmed_subtitle'),
     },
-    {'title': 'Recordatorio', 'subtitle': 'Tu reserva comienza en 30 minutos'},
+    {'title': tr('notifications.reminder_title'), 'subtitle': tr('notifications.reminder_subtitle')},
     {
-      'title': 'Oferta especial',
-      'subtitle': '20% de descuento en tu próxima reserva',
+      'title': tr('notifications.offer_title'),
+      'subtitle': tr('notifications.offer_subtitle'),
     },
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notificaciones')),
+      appBar: AppBar(title: Text(tr('notifications.title'))),
       body: ListView.separated(
         itemCount: _items.length,
         separatorBuilder: (_, __) => const Divider(height: 1),

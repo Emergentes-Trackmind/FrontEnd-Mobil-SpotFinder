@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartparking_mobile_application/shared/i18n.dart';
 import '../models/reservation.entity.dart';
 import '../services/reservation.service.dart';
 import 'reservation-card.dart';
@@ -82,7 +83,7 @@ class _ReservationListState extends State<ReservationList> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadReservations,
-              child: const Text('Retry'),
+              child: Text(tr('reservations.retry')),
             ),
           ],
         ),
@@ -110,14 +111,14 @@ class _ReservationListState extends State<ReservationList> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'No tienes reservas',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            Text(
+              tr('reservations.empty'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Cuando hagas tu primera reserva aparecerá aquí',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+            Text(
+              tr('reservations.empty_hint'),
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartparking_mobile_application/shared/components/navigator-bar.dart';
+import 'package:smartparking_mobile_application/shared/i18n.dart';
 import '../components/reservation-list.dart';
 
 class ReservationsScreen extends StatefulWidget {
@@ -13,7 +14,7 @@ class ReservationsScreen extends StatefulWidget {
 class _ReservationsScreenState extends State<ReservationsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final List<String> _statusTabs = ['PRÓXIMAS', 'PASADAS'];
+  // Tab labels are localized at build time so locale changes are reflected.
   int? driverId;
   bool _isLoading = true;
   int _selectedIndex = 2;
@@ -21,7 +22,7 @@ class _ReservationsScreenState extends State<ReservationsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _statusTabs.length, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _loadDriverId();
   }
 
@@ -68,7 +69,7 @@ class _ReservationsScreenState extends State<ReservationsScreen>
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Mis Reservas'),
+        title: Text(tr('reservations.title')),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: false,
@@ -76,27 +77,27 @@ class _ReservationsScreenState extends State<ReservationsScreen>
           unselectedLabelColor: Colors.grey,
           indicatorColor: Theme.of(context).primaryColor,
           tabs: [
-            Tab(text: _statusTabs[0]), // Próximas
-            Tab(text: _statusTabs[1]), // Pasadas
+            Tab(text: tr('reservations.upcoming')),
+            Tab(text: tr('reservations.past')),
           ],
         ),
       ),
       body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : driverId == null
-              ? const Center(
-                child: Text('No driver ID found. Please log in again.'),
-              )
-              : TabBarView(
-                controller: _tabController,
-                children: [
-                  // Próximas -> show confirmed/pending reservations
-                  ReservationList(status: 'CONFIRMED', driverId: driverId!),
-                  // Pasadas -> completed
-                  ReservationList(status: 'COMPLETED', driverId: driverId!),
-                ],
-              ),
+      _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : driverId == null
+          ? Center(
+        child: Text(tr('reservations.no_driver')),
+      )
+          : TabBarView(
+        controller: _tabController,
+        children: [
+          // Próximas -> show confirmed/pending reservations
+          ReservationList(status: 'CONFIRMED', driverId: driverId!),
+          // Pasadas -> completed
+          ReservationList(status: 'COMPLETED', driverId: driverId!),
+        ],
+      ),
       bottomNavigationBar: NavigatorBar(
         selectedIndex: _selectedIndex,
         onItemSelected: _onItemTapped,

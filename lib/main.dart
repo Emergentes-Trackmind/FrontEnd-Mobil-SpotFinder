@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:smartparking_mobile_application/parking-management/components/parking-map.component.dart';
@@ -10,6 +11,7 @@ import 'package:smartparking_mobile_application/profile-management/pages/payment
 import 'package:smartparking_mobile_application/profile-management/pages/notifications_page.dart';
 import 'package:smartparking_mobile_application/profile-management/pages/settings_page.dart';
 import 'package:smartparking_mobile_application/rating-and-review/views/reviews_view.dart';
+import 'package:smartparking_mobile_application/shared/i18n.dart';
 import 'package:smartparking_mobile_application/reservations/views/reservation-payment.dart';
 import 'package:smartparking_mobile_application/reservations/views/reservations-screen.dart';
 import 'iam/views/log-in.view.dart';
@@ -41,14 +43,23 @@ class MyApp extends StatelessWidget {
             return MaterialApp(
               navigatorKey: navigatorKey,
               initialRoute: '/login',
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('es'),
+                Locale('en'),
+              ],
               routes: {
                 '/login': (context) => LogInView(),
                 '/signup-driver': (context) => SignUpDriverView(),
                 '/home': (context) => ParkingMap(),
                 '/reservation-payment': (context) {
                   final args =
-                      ModalRoute.of(context)?.settings.arguments
-                          as Map<String, dynamic>;
+                  ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
                   return ReservationPayment(
                     userId: args['userId'],
                     reservationId: args['reservationId'],
@@ -56,7 +67,7 @@ class MyApp extends StatelessWidget {
                   );
                 },
                 '/reservations': (context) => ReservationsScreen(),
-                '/reviews': (context) => ReviewsView(title: 'Reseñas'),
+                '/reviews': (context) => ReviewsView(title: tr('reviews.title')),
                 '/profile': (context) => DriverDetailsPage(),
                 '/profile/edit': (context) => const EditProfilePage(),
                 '/profile/payments': (context) => const PaymentMethodsPage(),

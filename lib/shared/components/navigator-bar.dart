@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../i18n.dart';
 
 class NavigatorBar extends StatelessWidget {
   final int selectedIndex;
@@ -15,11 +16,11 @@ class NavigatorBar extends StatelessWidget {
       backgroundColor: Colors.white,
       currentIndex: selectedIndex,
       onTap: onItemSelected,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-        BottomNavigationBarItem(icon: Icon(Icons.reviews), label: 'Reseñas'),
-        BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Reservas'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+      items: [
+        BottomNavigationBarItem(icon: const Icon(Icons.home), label: tr('nav.home')),
+        BottomNavigationBarItem(icon: const Icon(Icons.reviews), label: tr('nav.reviews')),
+        BottomNavigationBarItem(icon: const Icon(Icons.list), label: tr('nav.reservations')),
+        BottomNavigationBarItem(icon: const Icon(Icons.person), label: tr('nav.profile')),
       ],
       selectedItemColor: accent,
       unselectedItemColor: Colors.grey,

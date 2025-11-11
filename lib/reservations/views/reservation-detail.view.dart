@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:smartparking_mobile_application/shared/i18n.dart';
 import '../models/reservation.entity.dart';
 import '../services/reservation.service.dart';
 import 'reservation-map.view.dart';
@@ -25,7 +26,7 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
     _computeRemaining();
     _timer = Timer.periodic(
       const Duration(seconds: 1),
-      (_) => _computeRemaining(),
+          (_) => _computeRemaining(),
     );
   }
 
@@ -82,13 +83,13 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Reserva cancelada')));
+      ).showSnackBar(SnackBar(content: Text(tr('reservations.canceled_snack'))));
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error cancelando: $e')));
+      ).showSnackBar(SnackBar(content: Text('${tr('reservations.error_canceling')}: $e')));
     }
   }
 
@@ -104,7 +105,7 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
         .padLeft(2, '0');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reserva Activa')),
+      appBar: AppBar(title: Text(tr('reservations.active_title'))),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
         child: Column(
@@ -136,7 +137,7 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'restante',
+                            tr('reservation.remaining_label'),
                             style: TextStyle(color: Colors.grey.shade600),
                           ),
                         ],
@@ -155,7 +156,7 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Espacio ${widget.reservation.spotLabel} • Hasta ${widget.reservation.endTime}',
+                    '${tr('reservation.spot')} ${widget.reservation.spotLabel} • ${tr('reservation.remaining_label')} ${widget.reservation.endTime}',
                     style: TextStyle(color: Colors.grey.shade700),
                   ),
                 ],
@@ -174,8 +175,8 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
                     MaterialPageRoute(
                       builder:
                           (context) => ReservationMapView(
-                            reservation: widget.reservation,
-                          ),
+                        reservation: widget.reservation,
+                      ),
                     ),
                   );
                 },
@@ -186,9 +187,9 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text(
-                  'Ver en mapa',
-                  style: TextStyle(color: Colors.black87),
+                child: Text(
+                  tr('reservations.view_on_map'),
+                  style: const TextStyle(color: Colors.black87),
                 ),
               ),
             ),
@@ -206,7 +207,7 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text('Cancelar reserva'),
+                child: Text(tr('reservations.cancel_label')),
               ),
             ),
           ],

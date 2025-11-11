@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../shared/i18n.dart';
 import '../models/driver.model.dart';
 import '../services/driver.service.dart';
 import '../../shared/components/navigator-bar.dart';
@@ -105,168 +106,164 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _loadDriverDetails,
-                          child: const Text('Retry'),
+                          child: Text(tr('profile.retry')),
                         ),
                       ],
                     ),
                   )
                 else if (_driver == null)
-                  const Center(
-                    child: Text(
-                      'Driver details not available.',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  )
-                else
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Header: avatar, name and email
-                      Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              // TODO: implement change profile picture (image picker)
-                              showDialog(
-                                context: context,
-                                builder:
-                                    (ctx) => AlertDialog(
-                                      title: const Text(
-                                        'Cambiar foto de perfil',
+                    Center(
+                      child: Text(
+                        tr('profile.driver_not_available'),
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Header: avatar, name and email
+                        Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                // TODO: implement change profile picture (image picker)
+                                showDialog(
+                                  context: context,
+                                  builder:
+                                      (ctx) => AlertDialog(
+                                    title: Text(tr('profile.change_photo_title')),
+                                    content: Text(tr('profile.change_photo_content')),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(ctx),
+                                        child: const Text('Cerrar'),
                                       ),
-                                      content: const Text(
-                                        'Funcionalidad para cambiar foto aún no implementada.',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(ctx),
-                                          child: const Text('Cerrar'),
-                                        ),
-                                      ],
-                                    ),
-                              );
-                            },
-                            child: CircleAvatar(
-                              radius: 42,
-                              backgroundColor: Colors.grey.shade200,
-                              child: const Icon(
-                                Icons.person,
-                                size: 44,
-                                color: Colors.black54,
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: CircleAvatar(
+                                radius: 42,
+                                backgroundColor: Colors.grey.shade200,
+                                child: const Icon(
+                                  Icons.person,
+                                  size: 44,
+                                  color: Colors.black54,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _driver!.fullName ?? 'Usuario',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _driver!.fullName ?? 'Usuario',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  // email may be in driver model under userId mapping; fetch from prefs if needed
-                                  _driver!.driverId != null
-                                      ? 'user#${_driver!.driverId}'
-                                      : '',
-                                  style: TextStyle(color: Colors.grey.shade700),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-
-                      // Options: Datos personales, Métodos de pago, Notificaciones, Configuración
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            ListTile(
-                              leading: const Icon(Icons.person_outline),
-                              title: const Text('Datos personales'),
-                              subtitle: const Text('Editar información'),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () async {
-                                await Navigator.pushNamed(
-                                  context,
-                                  '/profile/edit',
-                                );
-                                // refresh after edit returns
-                                _loadDriverDetails();
-                              },
-                            ),
-                            const Divider(height: 1),
-                            ListTile(
-                              leading: const Icon(Icons.credit_card_outlined),
-                              title: const Text('Métodos de pago'),
-                              subtitle: const Text('Tarjetas guardadas'),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  '/profile/payments',
-                                );
-                              },
-                            ),
-                            const Divider(height: 1),
-                            ListTile(
-                              leading: const Icon(Icons.notifications_outlined),
-                              title: const Text('Notificaciones'),
-                              subtitle: const Text('Visualizar Notificaciones'),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  '/profile/notifications',
-                                );
-                              },
-                            ),
-                            const Divider(height: 1),
-                            ListTile(
-                              leading: const Icon(Icons.settings_outlined),
-                              title: const Text('Configuración'),
-                              subtitle: const Text('Preferencias de la app'),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  '/profile/settings',
-                                );
-                              },
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    // email may be in driver model under userId mapping; fetch from prefs if needed
+                                    _driver!.driverId != null
+                                        ? 'user#${_driver!.driverId}'
+                                        : '',
+                                    style: TextStyle(color: Colors.grey.shade700),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                      ),
+                        const SizedBox(height: 18),
 
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/login');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(vertical: 15),
+                        // Options: Datos personales, Métodos de pago, Notificaciones, Configuración
+                        Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'Cerrar sesión',
-                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          child: Column(
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.person_outline),
+                                title: Text(tr('profile.personal_data')),
+                                subtitle: Text(tr('profile.edit_info')),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () async {
+                                  await Navigator.pushNamed(
+                                    context,
+                                    '/profile/edit',
+                                  );
+                                  // refresh after edit returns
+                                  _loadDriverDetails();
+                                },
+                              ),
+                              const Divider(height: 1),
+                              ListTile(
+                                leading: const Icon(Icons.credit_card_outlined),
+                                title: Text(tr('profile.payment_methods')),
+                                subtitle: Text(tr('profile.stored_cards')),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/profile/payments',
+                                  );
+                                },
+                              ),
+                              const Divider(height: 1),
+                              ListTile(
+                                leading: const Icon(Icons.notifications_outlined),
+                                title: Text(tr('profile.notifications')),
+                                subtitle: Text(tr('profile.view_notifications')),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/profile/notifications',
+                                  );
+                                },
+                              ),
+                              const Divider(height: 1),
+                              ListTile(
+                                leading: const Icon(Icons.settings_outlined),
+                                title: Text(tr('profile.settings')),
+                                subtitle: Text(tr('profile.preferences')),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/profile/settings',
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/login');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                            ),
+                            child: Text(
+                              tr('profile.logout'),
+                              style: const TextStyle(fontSize: 16, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
               ],
             ),
           ),

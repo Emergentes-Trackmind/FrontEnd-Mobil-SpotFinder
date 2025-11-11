@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../shared/app_state.dart';
+import '../../shared/i18n.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -36,13 +37,13 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Configuración')),
+      appBar: AppBar(title: Text(tr('settings.title'))),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          const Text(
-            'Notificaciones',
-            style: TextStyle(fontWeight: FontWeight.bold),
+          Text(
+            tr('settings.notifications'),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           SwitchListTile(
             title: const Text('Recordatorios de reserva'),
@@ -54,7 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           SwitchListTile(
-            title: const Text('Ofertas y promociones'),
+            title: Text(tr('settings.offers')),
             value: _offers,
             onChanged: (v) async {
               final prefs = await SharedPreferences.getInstance();
@@ -63,7 +64,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           SwitchListTile(
-            title: const Text('Actualizaciones de la app'),
+            title: Text(tr('settings.updates')),
             value: _updates,
             onChanged: (v) async {
               final prefs = await SharedPreferences.getInstance();
@@ -72,12 +73,12 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Preferencias',
-            style: TextStyle(fontWeight: FontWeight.bold),
+          Text(
+            tr('settings.preferences'),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           ListTile(
-            title: const Text('Idioma'),
+            title: Text(tr('settings.language')),
             subtitle: Text(_language),
             trailing: const Icon(Icons.chevron_right),
             onTap: () async {
@@ -85,31 +86,31 @@ class _SettingsPageState extends State<SettingsPage> {
                 context: context,
                 builder:
                     (ctx) => SimpleDialog(
-                      title: const Text('Selecciona idioma'),
-                      children: [
-                        SimpleDialogOption(
-                          onPressed: () => Navigator.pop(ctx, 'Español'),
-                          child: const Text('Español'),
-                        ),
-                        SimpleDialogOption(
-                          onPressed: () => Navigator.pop(ctx, 'English'),
-                          child: const Text('English'),
-                        ),
-                      ],
+                  title: Text(tr('settings.select_language')),
+                  children: [
+                    SimpleDialogOption(
+                      onPressed: () => Navigator.pop(ctx, 'Español'),
+                      child: Text(tr('language.spanish')),
                     ),
+                    SimpleDialogOption(
+                      onPressed: () => Navigator.pop(ctx, 'English'),
+                      child: Text(tr('language.english')),
+                    ),
+                  ],
+                ),
               );
               if (selected != null) {
                 await AppState.setLanguage(selected);
                 if (!mounted) return;
                 setState(() => _language = selected);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Idioma guardado')),
+                  SnackBar(content: Text(tr('settings.saved_language'))),
                 );
               }
             },
           ),
           ListTile(
-            title: const Text('Tema'),
+            title: Text(tr('settings.theme')),
             subtitle: Text(_theme),
             trailing: const Icon(Icons.chevron_right),
             onTap: () async {
@@ -117,18 +118,18 @@ class _SettingsPageState extends State<SettingsPage> {
                 context: context,
                 builder:
                     (ctx) => SimpleDialog(
-                      title: const Text('Selecciona tema'),
-                      children: [
-                        SimpleDialogOption(
-                          onPressed: () => Navigator.pop(ctx, 'Claro'),
-                          child: const Text('Claro'),
-                        ),
-                        SimpleDialogOption(
-                          onPressed: () => Navigator.pop(ctx, 'Oscuro'),
-                          child: const Text('Oscuro'),
-                        ),
-                      ],
+                  title: Text(tr('settings.select_theme')),
+                  children: [
+                    SimpleDialogOption(
+                      onPressed: () => Navigator.pop(ctx, 'Claro'),
+                      child: Text(tr('theme.light')),
                     ),
+                    SimpleDialogOption(
+                      onPressed: () => Navigator.pop(ctx, 'Oscuro'),
+                      child: Text(tr('theme.dark')),
+                    ),
+                  ],
+                ),
               );
               if (selected != null) {
                 await AppState.setTheme(selected);
@@ -136,7 +137,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 setState(() => _theme = selected);
                 ScaffoldMessenger.of(
                   context,
-                ).showSnackBar(const SnackBar(content: Text('Tema guardado')));
+                ).showSnackBar(SnackBar(content: Text(tr('settings.saved_theme'))));
               }
             },
           ),
