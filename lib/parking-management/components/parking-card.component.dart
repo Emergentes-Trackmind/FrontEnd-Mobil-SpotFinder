@@ -143,6 +143,43 @@ class ParkingCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
+                    // Features chips: Cubierto / 24h
+                    Row(
+                      children: [
+                        if (parking.covered)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.green[50],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: const [
+                                Icon(Icons.roofing, size: 16, color: Colors.green),
+                                SizedBox(width: 6),
+                                Text('Cubierto', style: TextStyle(fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                        if (parking.open24)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.orange[50],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: const [
+                                Icon(Icons.schedule, size: 16, color: Colors.orange),
+                                SizedBox(width: 6),
+                                Text('24h', style: TextStyle(fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
                     // See More button
                     SizedBox(

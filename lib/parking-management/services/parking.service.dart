@@ -32,4 +32,14 @@ class ParkingService extends ApiClient {
       throw Exception('Error loading data: ${response.reasonPhrase}');
     }
   }
+
+  Future<List<dynamic>> search({String? q, bool? covered, bool? open24}) async {
+    final params = <String, dynamic>{};
+    if (q != null && q.isNotEmpty) params['q'] = q;
+    if (covered != null) params['covered'] = covered;
+    if (open24 != null) params['open24'] = open24;
+
+    final data = await get(params);
+    return data;
+  }
 }

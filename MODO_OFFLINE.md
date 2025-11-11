@@ -1,4 +1,4 @@
-# SmartParking Mobile - Modo Offline
+# SpotFinder Mobile - Modo Offline
 
 Esta aplicación ha sido configurada para funcionar completamente offline sin necesidad de APIs externas ni bases de datos.
 

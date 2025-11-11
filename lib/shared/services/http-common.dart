@@ -26,16 +26,23 @@ class ApiClient {
     };
   }
 
-  Future<List<dynamic>> get() async {
-    final uri = Uri.parse('$baseUrl$resourceEndPoint');
+  Future<List<dynamic>> get([Map<String, dynamic>? queryParams]) async {
+    Uri uri = Uri.parse('$baseUrl$resourceEndPoint');
+    if (queryParams != null && queryParams.isNotEmpty) {
+      // Ensure all values are strings for Uri
+      final filtered = <String, String>{};
+      queryParams.forEach((k, v) {
+        if (v != null) filtered[k] = v.toString();
+      });
+      uri = uri.replace(queryParameters: filtered);
+    }
+
     final headers = await _getHeaders();
     final response = await http.get(uri, headers: headers);
-    print(response.statusCode);
 
     if (response.statusCode == 200) {
       return jsonDecode(utf8.decode(response.bodyBytes));
     } else if (response.statusCode == 404) {
-      print('No data available');
       return [];
     } else {
       throw Exception('Error loading data: ${response.reasonPhrase}');

@@ -13,6 +13,8 @@ class Parking {
   final int totalRows;
   final int totalColumns;
   final String imageUrl;
+  final bool covered;
+  final bool open24;
 
   Parking({
     required this.id,
@@ -29,6 +31,8 @@ class Parking {
     required this.totalRows,
     required this.totalColumns,
     required this.imageUrl,
+    required this.covered,
+    required this.open24,
   });
 
   factory Parking.fromJson(Map<String, dynamic> json) {
@@ -47,11 +51,15 @@ class Parking {
       totalRows: json['totalRows'] ?? 0,
       totalColumns: json['totalColumns'] ?? 0,
       imageUrl: json['imageUrl'] ?? '',
+      covered: (json['covered'] ?? json['isCovered'] ?? json['is_covered'] ?? false) == true ||
+          (json['covered'] ?? json['isCovered'] ?? json['is_covered'] ?? 'false') == 'true',
+      open24: (json['open24'] ?? json['is24h'] ?? json['open_24'] ?? false) == true ||
+          (json['open24'] ?? json['is24h'] ?? json['open_24'] ?? 'false') == 'true',
     );
   }
 
   @override
   String toString() {
-    return 'Parking{id: $id, ownerId: $ownerId, name: $name, description: $description, address: $address, lat: $lat, lng: $lng, ratePerHour: $ratePerHour, rating: $rating, totalSpots: $totalSpots, availableSpots: $availableSpots, totalRows: $totalRows, totalColumns: $totalColumns, imageUrl: $imageUrl}';
+    return 'Parking{id: $id, ownerId: $ownerId, name: $name, description: $description, address: $address, lat: $lat, lng: $lng, ratePerHour: $ratePerHour, rating: $rating, totalSpots: $totalSpots, availableSpots: $availableSpots, totalRows: $totalRows, totalColumns: $totalColumns, imageUrl: $imageUrl, covered: $covered, open24: $open24}';
   }
 }

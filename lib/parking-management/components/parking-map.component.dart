@@ -25,6 +25,10 @@ class _ParkingMapState extends State<ParkingMap> {
   final List<Parking> _parkingList = [];
   final Map<String, Parking> _annotationIdToParking = {};
   int _selectedIndex = 0;
+  final TextEditingController _searchController = TextEditingController();
+  bool _filterCovered = false;
+  bool _filter24h = false;
+  bool _isSearching = false;
 
   bool _isMapReady = false;
   bool _isParkingDataReady = false;
@@ -38,6 +42,7 @@ class _ParkingMapState extends State<ParkingMap> {
   @override
   void dispose() {
     userLocationStream?.cancel();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -65,7 +70,7 @@ class _ParkingMapState extends State<ParkingMap> {
     try {
       final data = await _parkingService.get();
       final parkings =
-          data.map<Parking>((item) => Parking.fromJson(item)).toList();
+      data.map<Parking>((item) => Parking.fromJson(item)).toList();
       setState(() {
         _parkingList.addAll(parkings);
         _isParkingDataReady = true;
@@ -125,7 +130,7 @@ class _ParkingMapState extends State<ParkingMap> {
     );
 
     pointAnnotationManager =
-        await mapboxMap.annotations.createPointAnnotationManager();
+    await mapboxMap.annotations.createPointAnnotationManager();
 
     // Add tap listener
     pointAnnotationManager?.addOnPointAnnotationClickListener(
@@ -156,7 +161,7 @@ class _ParkingMapState extends State<ParkingMap> {
         iconSize: 2.0,
       );
       var createdAnnotation = await pointAnnotationManager!.create(marker);
-      _annotationIdToParking[createdAnnotation.id!] = parking;
+      _annotationIdToParking[createdAnnotation.id] = parking;
     }
   }
 
@@ -198,6 +203,103 @@ class _ParkingMapState extends State<ParkingMap> {
     );
   }
 
+  Future<void> _searchParkings() async {
+    setState(() {
+      _isSearching = true;
+    });
+
+    try {
+      final q = _searchController.text.trim();
+
+      // If the user hasn't typed anything and no filters are active,
+      // do not perform a search or show results.
+      if (q.isEmpty && !_filterCovered && !_filter24h) {
+        setState(() {
+          _isSearching = false;
+        });
+        return;
+      }
+
+      final data = await _parkingService.search(
+        q: q.isEmpty ? null : q,
+        covered: _filterCovered ? true : null,
+        open24: _filter24h ? true : null,
+      );
+
+      final results = data.map<Parking>((item) => Parking.fromJson(item)).toList();
+
+      setState(() {
+        _isSearching = false;
+      });
+
+      if (results.isEmpty) {
+        showModalBottomSheet(
+          context: context,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          builder: (context) {
+            return SizedBox(
+              height: 200,
+              child: Center(child: Text('No se encontraron parkings')),
+            );
+          },
+        );
+        return;
+      }
+
+      showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (context) {
+          return ListView.separated(
+            padding: const EdgeInsets.all(12),
+            itemBuilder: (context, index) {
+              final parking = results[index];
+              return ListTile(
+                title: Text(parking.name),
+                subtitle: Text(parking.address),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (parking.covered) const Icon(Icons.roofing, size: 18),
+                    if (parking.open24) const Icon(Icons.schedule, size: 18),
+                  ],
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  // center map on selection and show details
+                  try {
+                    mapboxMap.setCamera(
+                      mp.CameraOptions(
+                        center: mp.Point(
+                          coordinates: mp.Position(parking.lng, parking.lat),
+                        ),
+                        zoom: 16,
+                      ),
+                    );
+                  } catch (_) {}
+                  _showParkingDetails(parking);
+                },
+              );
+            },
+            separatorBuilder: (_, __) => const Divider(),
+            itemCount: results.length,
+          );
+        },
+      );
+    } catch (e) {
+      setState(() {
+        _isSearching = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error buscando parkings: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -220,7 +322,7 @@ class _ParkingMapState extends State<ParkingMap> {
                     children: [
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
@@ -232,15 +334,31 @@ class _ParkingMapState extends State<ParkingMap> {
                             ],
                           ),
                           child: Row(
-                            children: const [
-                              Icon(Icons.search, color: Colors.grey),
-                              SizedBox(width: 8),
+                            children: [
+                              const SizedBox(width: 8),
+                              const Icon(Icons.search, color: Colors.grey),
+                              const SizedBox(width: 8),
                               Expanded(
-                                child: Text(
-                                  'Buscar parking...',
-                                  style: TextStyle(color: Colors.grey),
+                                child: TextField(
+                                  controller: _searchController,
+                                  textInputAction: TextInputAction.search,
+                                  onSubmitted: (_) => _searchParkings(),
+                                  decoration: const InputDecoration(
+                                    hintText: 'Buscar parking...',
+                                    border: InputBorder.none,
+                                    isCollapsed: true,
+                                  ),
                                 ),
                               ),
+                              if (_isSearching)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -270,41 +388,26 @@ class _ParkingMapState extends State<ParkingMap> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        margin: const EdgeInsets.symmetric(horizontal: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                        child: const Text('Cubierto'),
+                      FilterChip(
+                        label: const Text('Cubierto'),
+                        selected: _filterCovered,
+                        onSelected: (v) {
+                          setState(() {
+                            _filterCovered = v;
+                          });
+                          _searchParkings();
+                        },
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        margin: const EdgeInsets.symmetric(horizontal: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                        child: const Text('24h'),
+                      const SizedBox(width: 6),
+                      FilterChip(
+                        label: const Text('24h'),
+                        selected: _filter24h,
+                        onSelected: (v) {
+                          setState(() {
+                            _filter24h = v;
+                          });
+                          _searchParkings();
+                        },
                       ),
                     ],
                   ),
@@ -338,7 +441,7 @@ class _ParkingAnnotationClickListener
 
   @override
   void onPointAnnotationClick(mp.PointAnnotation annotation) {
-    final parking = mapState._annotationIdToParking[annotation.id!];
+    final parking = mapState._annotationIdToParking[annotation.id];
     if (parking != null) {
       mapState._showParkingDetails(parking);
     }
