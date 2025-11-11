@@ -23,7 +23,11 @@ class _ReservationMapViewState extends State<ReservationMapView> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Reserva finalizada')));
-      Navigator.popUntil(context, (route) => route.isFirst);
+      // Redirect to the reservations screen after finalizing.
+      // Use pushReplacementNamed to replace the current active reservation view
+      // with the reservations list so the user sees their updated reservations.
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/reservations');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -38,17 +42,17 @@ class _ReservationMapViewState extends State<ReservationMapView> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Extender tiempo'),
-            content: const Text(
-              'Funcionalidad de extender tiempo (placeholder).',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cerrar'),
-              ),
-            ],
+        title: const Text('Extender tiempo'),
+        content: const Text(
+          'Funcionalidad de extender tiempo (placeholder).',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
           ),
+        ],
+      ),
     );
   }
 
