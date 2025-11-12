@@ -23,6 +23,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
+
+  final _mbToken = dotenv.env['MAPBOX_ACCESS_TOKEN'];
+  if (_mbToken == null || _mbToken.trim().isEmpty) {
+    debugPrint('MAPBOX token: NOT FOUND in .env');
+  } else {
+    final t = _mbToken.trim();
+    final masked = t.length > 12 ? '${t.substring(0, 8)}...${t.substring(t.length - 4)}' : t;
+    debugPrint('MAPBOX token loaded (masked): $masked');
+  }
+
   // Load persisted app state (theme / language)
   await AppState.loadFromPrefs();
 
@@ -48,10 +58,7 @@ class MyApp extends StatelessWidget {
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
               ],
-              supportedLocales: const [
-                Locale('es'),
-                Locale('en'),
-              ],
+              supportedLocales: const [Locale('es'), Locale('en')],
               routes: {
                 '/login': (context) => LogInView(),
                 '/signup-driver': (context) => SignUpDriverView(),
@@ -67,7 +74,8 @@ class MyApp extends StatelessWidget {
                   );
                 },
                 '/reservations': (context) => ReservationsScreen(),
-                '/reviews': (context) => ReviewsView(title: tr('reviews.title')),
+                '/reviews':
+                    (context) => ReviewsView(title: tr('reviews.title')),
                 '/profile': (context) => DriverDetailsPage(),
                 '/profile/edit': (context) => const EditProfilePage(),
                 '/profile/payments': (context) => const PaymentMethodsPage(),

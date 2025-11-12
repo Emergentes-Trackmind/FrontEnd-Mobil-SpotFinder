@@ -11,7 +11,10 @@ import 'package:smartparking_mobile_application/shared/i18n.dart';
 import '../models/parking.entity.dart';
 
 class ParkingMap extends StatefulWidget {
+  // Allow const construction so callers can use `const ParkingMap()`.
   const ParkingMap({super.key});
+
+  // Top search bar overlay (Inicio screen)
 
   @override
   State<ParkingMap> createState() => _ParkingMapState();
@@ -32,6 +35,7 @@ class _ParkingMapState extends State<ParkingMap> {
 
   bool _isMapReady = false;
   bool _isParkingDataReady = false;
+  // diagnostic fields removed (badge removed)
 
   @override
   void initState() {
@@ -41,12 +45,24 @@ class _ParkingMapState extends State<ParkingMap> {
     // We load all parkings initially so markers are visible on the map.
     // If you prefer to show no markers until a user searches, remove the
     // following load and keep only location tracking.
-    _startLocationTracking().catchError((e) => debugPrint('Location init error: $e'));
+    _startLocationTracking().catchError((e) {
+      debugPrint('Location init error: $e');
+      // Show a user-visible message after the first frame so they know
+      // to enable location permissions if needed.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Location error: $e')));
+        }
+      });
+    });
 
     _parkingService
         .search()
         .then((data) {
-      final list = data.map<Parking>((item) => Parking.fromJson(item)).toList();
+      final list =
+      data.map<Parking>((item) => Parking.fromJson(item)).toList();
       setState(() {
         _parkingList.clear();
         _parkingList.addAll(list);
@@ -56,9 +72,32 @@ class _ParkingMapState extends State<ParkingMap> {
       if (_isMapReady) {
         _createParkingMarkers();
       }
-    }).catchError((e) {
+    })
+        .catchError((e) {
       debugPrint('Failed to load parkings: $e');
+      setState(() {
+        _isParkingDataReady = false;
+      });
     });
+
+    // If the map never becomes ready, surface a helpful error after a short
+    // timeout so the user knows why markers aren't visible.
+    Timer(const Duration(seconds: 4), () {
+      if (mounted && !_isMapReady && _parkingList.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'El mapa no pudo inicializarse. Verifica el token de Mapbox y la conexión.',
+                ),
+              ),
+            );
+          }
+        });
+      }
+    });
+
   }
 
   Future<void> _startLocationTracking() async {
@@ -88,15 +127,24 @@ class _ParkingMapState extends State<ParkingMap> {
     userLocationStream = gl.Geolocator.getPositionStream(
       locationSettings: locationSettings,
     ).listen((gl.Position position) {
-      mapboxMap.setCamera(
-        mp.CameraOptions(
-          center: mp.Point(
-            coordinates: mp.Position(position.longitude, position.latitude),
-          ),
-          zoom: 15,
-        ),
-      );
+      // Only update the camera if the map is already created.
+      if (_isMapReady) {
+        try {
+          mapboxMap.setCamera(
+            mp.CameraOptions(
+              center: mp.Point(
+                coordinates: mp.Position(position.longitude, position.latitude),
+              ),
+              zoom: 15,
+            ),
+          );
+        } catch (e) {
+          debugPrint('Failed to set camera on location update: $e');
+        }
+      }
     });
+
+    // location tracking started
   }
 
   Future<void> _onMapCreated(mp.MapboxMap mapboxMap) async {
@@ -117,6 +165,11 @@ class _ParkingMapState extends State<ParkingMap> {
     setState(() {
       _isMapReady = true;
     });
+
+    // Try to center on user immediately when map becomes ready.
+    _goToUserLocation().catchError(
+          (e) => debugPrint('goToUserLocation failed: $e'),
+    );
 
     if (_isParkingDataReady) {
       _createParkingMarkers();
@@ -179,6 +232,8 @@ class _ParkingMapState extends State<ParkingMap> {
       },
     );
   }
+
+
 
   Future<void> _searchParkings() async {
     setState(() {
@@ -394,6 +449,7 @@ class _ParkingMapState extends State<ParkingMap> {
                 ],
               ),
             ),
+            // (diagnostic badge removed)
             Positioned(
               bottom: 20,
               right: 20,

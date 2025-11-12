@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App name, keep in sync with AndroidManifest if needed -->
+    <string name="app_name">smartparking_mobile_application</string>
+
+    <!-- Mapbox access token used by the native Android Mapbox SDK.
+         Replace the value with your Mapbox public token (starts with pk.).
+         For security, do NOT commit production tokens to a public repo. -->
+    <string name="mapbox_access_token">pk.eyJ1IjoibXJhbWlyZXotdTIwMjIxMDU4MiIsImEiOiJjbWh2OHFmc2MwODhxMmlxMXBzcThpM3hoIn0.lFVh7UDcluNGHOYRVbLDIA</string>
+</resources>
