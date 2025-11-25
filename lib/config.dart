@@ -1,1 +1,1 @@
-const String BASE_URL = 'http://10.0.2.2:8080/api/v1';
+const String BASE_URL = 'https://spotfinderback-eaehduf4ehh7hjah.eastus2-01.azurewebsites.net/api/v1';

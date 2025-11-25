@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient {
   final String baseUrl =
-      dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8080/api/v1';
+      dotenv.env['BASE_URL'] ?? 'https://spotfinderback-eaehduf4ehh7hjah.eastus2-01.azurewebsites.net/api/v1';
   String? _token;
   String? resourceEndPoint;
 
