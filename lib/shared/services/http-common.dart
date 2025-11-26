@@ -59,10 +59,12 @@ class ApiClient {
       body: utf8.encode(json.encode(data)),
     );
 
+    final decodedBody = response.bodyBytes.isNotEmpty ? json.decode(utf8.decode(response.bodyBytes)) : null;
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return json.decode(utf8.decode(response.bodyBytes));
+      return decodedBody ?? {};
     } else {
-      throw Exception('Error posting data: ${response.reasonPhrase}');
+      final bodyPreview = decodedBody != null ? decodedBody.toString() : '(empty body)';
+      throw Exception('Error posting data: ${response.statusCode} ${response.reasonPhrase} - $bodyPreview');
     }
   }
 
