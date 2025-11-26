@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/driver.model.dart';
 import '../services/driver.service.dart';
 
@@ -42,14 +41,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> _loadProfile() async {
     setState(() => _isLoading = true);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-      if (userId == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
-      _userId = userId;
-      final data = await _driverService.getById(userId);
+      final data = await _driverService.getCurrentProfile();
+      // attempt to extract userId for later saves
+      _userId = (data['userId'] ?? data['id']) is int ? (data['userId'] ?? data['id']) as int : null;
       final driver = Driver.fromJson(data);
       _nameController.text = driver.fullName ?? '';
       _phoneController.text = driver.phone ?? '';
@@ -94,19 +88,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
       // Send payload with exactly the required fields to the backend
       final response = await _driverService.updateProfile(payload);
       if (!mounted) return;
-      final returnedAvatar =
-      (response.containsKey('avatarUrl') && response['avatarUrl'] != null)
-          ? response['avatarUrl'] as String
-          : payload['avatarUrl']?.toString();
+
+      // After updating, fetch the canonical profile from the server to ensure
+      // we display exactly what was persisted (server may enrich/normalize data).
+      Map<String, dynamic> fresh;
+      try {
+        fresh = await _driverService.getCurrentProfile();
+      } catch (e) {
+        // If fetching current profile fails, fall back to server response or payload
+        fresh = Map<String, dynamic>.from(response);
+      }
+
+      final returnedAvatar = (fresh.containsKey('avatarUrl') && fresh['avatarUrl'] != null)
+          ? fresh['avatarUrl'].toString()
+          : (payload['avatarUrl']?.toString() ?? '');
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Perfil actualizado: ${returnedAvatar ?? '(no avatar)'}',
-          ),
+          content: Text('Perfil actualizado: ${returnedAvatar.isNotEmpty ? returnedAvatar : '(no avatar)'}'),
         ),
       );
-      // Return the avatarUrl (server value preferred) so caller can refresh the avatar immediately
-      Navigator.pop(context, returnedAvatar);
+
+      // Return the canonical profile object so the details page can update fully
+      Navigator.pop(context, fresh);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 // simplified: no direct http/bytes fetching here
 import '../../shared/i18n.dart';
 import '../models/driver.model.dart';
@@ -19,6 +18,7 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
   bool _isLoading = true;
   String _errorMessage = '';
   int _selectedIndex = 3;
+  // simple avatar handling: use the URL returned by the server
 
   void _onItemTapped(int index) {
     setState(() {
@@ -47,19 +47,7 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
     });
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
-      if (userId == null) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = 'User ID not found. Please log in again.';
-        });
-        return;
-      }
-
-      final driverData = await _driverService.getById(userId);
-
+      final driverData = await _driverService.getCurrentProfile();
       setState(() {
         _driver = Driver.fromJson(driverData);
         _isLoading = false;
@@ -77,7 +65,8 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
     final s = raw.trim();
     if (s.startsWith('http')) return s;
     try {
-      final base = Uri.parse(DriverService().baseUrl).origin;
+      final base =
+          Uri.parse(DriverService().baseUrl).origin; // scheme://host[:port]
       return s.startsWith('/') ? '$base$s' : '$base/$s';
     } catch (_) {
       return s;
@@ -87,6 +76,7 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // No AppBar here: header is rendered inside the body so we don't show a back arrow
       body: RefreshIndicator(
         onRefresh: _loadDriverDetails,
         child: SingleChildScrollView(
@@ -134,15 +124,22 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // Header: avatar, name and email
                         Row(
                           children: [
                             GestureDetector(
                               onTap: () {
+                                // original behaviour: show a simple dialog saying change-photo is not implemented
                                 showDialog(
                                   context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: Text(tr('profile.change_photo_title')),
-                                    content: Text(tr('profile.change_photo_content')),
+                                  builder:
+                                      (ctx) => AlertDialog(
+                                    title: Text(
+                                      tr('profile.change_photo_title'),
+                                    ),
+                                    content: Text(
+                                      tr('profile.change_photo_content'),
+                                    ),
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(ctx),
@@ -152,26 +149,34 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                                   ),
                                 );
                               },
-                              child: Builder(builder: (ctx) {
-                                final preview = _avatarPreview(_driver?.avatarUrl);
-                                return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 42,
-                                      backgroundColor: Colors.grey.shade200,
-                                      backgroundImage: (preview != null) ? NetworkImage(preview) : null,
-                                      child: (preview == null)
-                                          ? const Icon(
-                                        Icons.person,
-                                        size: 44,
-                                        color: Colors.black54,
-                                      )
-                                          : null,
-                                    ),
-                                  ],
-                                );
-                              }),
+                              child: Builder(
+                                builder: (ctx) {
+                                  final preview = _avatarPreview(
+                                    _driver?.avatarUrl,
+                                  );
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 42,
+                                        backgroundColor: Colors.grey.shade200,
+                                        backgroundImage:
+                                        (preview != null)
+                                            ? NetworkImage(preview)
+                                            : null,
+                                        child:
+                                        (preview == null)
+                                            ? const Icon(
+                                          Icons.person,
+                                          size: 44,
+                                          color: Colors.black54,
+                                        )
+                                            : null,
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
@@ -187,6 +192,7 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
+                                    // email may be in driver model under userId mapping; fetch from prefs if needed
                                     _driver!.driverId != null
                                         ? 'user#${_driver!.driverId}'
                                         : '',
@@ -199,7 +205,7 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                         ),
                         const SizedBox(height: 18),
 
-
+                        // Options: Datos personales, Métodos de pago, Notificaciones, Configuración
                         Card(
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -217,23 +223,34 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                                     context,
                                     '/profile/edit',
                                   );
-                                  // If edit returned an avatarUrl (string), refresh only avatar
-                                  if (result is String && result.isNotEmpty) {
+                                  // If edit returned a full driver map, update the model
+                                  if (result is Map) {
+                                    try {
+                                      final Map<String, dynamic> m = Map<String, dynamic>.from(result);
+                                      setState(() {
+                                        _driver = Driver.fromJson(m);
+                                      });
+                                    } catch (_) {
+                                      // If conversion fails, reload from server
+                                      _loadDriverDetails();
+                                    }
+                                  } else if (result is String && result.isNotEmpty) {
+                                    // If only avatar URL string returned, patch avatar in-memory
                                     setState(() {
-                                      if (_driver != null) _driver = Driver(
-                                        userId: _driver!.userId,
-                                        driverId: _driver!.driverId,
-                                        fullName: _driver!.fullName,
-                                        city: _driver!.city,
-                                        country: _driver!.country,
-                                        phone: _driver!.phone,
-                                        dni: _driver!.dni,
-                                        avatarUrl: result,
-                                        email: _driver!.email,
-                                        role: _driver!.role,
-                                      );
+                                      if (_driver != null)
+                                        _driver = Driver(
+                                          userId: _driver!.userId,
+                                          driverId: _driver!.driverId,
+                                          fullName: _driver!.fullName,
+                                          city: _driver!.city,
+                                          country: _driver!.country,
+                                          phone: _driver!.phone,
+                                          dni: _driver!.dni,
+                                          avatarUrl: result,
+                                          email: _driver!.email,
+                                          role: _driver!.role,
+                                        );
                                     });
-                                    // avatar updated in-memory; the UI will use the returned URL
                                   } else {
                                     // fallback: reload whole profile
                                     _loadDriverDetails();
