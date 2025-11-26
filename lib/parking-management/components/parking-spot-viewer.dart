@@ -50,9 +50,33 @@ class _ParkingSpotViewerState extends State<ParkingSpotViewer> {
 
   void _initializeGrid() {
     _grid = [];
-    for (int row = 0; row < widget.parking.totalRows; row++) {
+    int rows = widget.parking.totalRows;
+    int cols = widget.parking.totalColumns;
+
+    // If the parking model doesn't provide grid dimensions, infer them
+    // from the spot data (find max row/col indices).
+    if ((rows == 0 || cols == 0) && _parkingSpots.isNotEmpty) {
+      int maxRow = -1;
+      int maxCol = -1;
+      for (final spot in _parkingSpots) {
+        final rRaw = spot['rowIndex'];
+        final cRaw = spot['columnIndex'];
+        final r = (rRaw is int) ? rRaw : int.tryParse(rRaw?.toString() ?? '') ?? -1;
+        final c = (cRaw is int) ? cRaw : int.tryParse(cRaw?.toString() ?? '') ?? -1;
+        if (r > maxRow) maxRow = r;
+        if (c > maxCol) maxCol = c;
+      }
+      if (maxRow >= 0) rows = maxRow + 1;
+      if (maxCol >= 0) cols = maxCol + 1;
+    }
+
+    // guard against zero dimensions
+    if (rows <= 0) rows = 1;
+    if (cols <= 0) cols = 1;
+
+    for (int row = 0; row < rows; row++) {
       final rowArray = <Map<String, dynamic>>[];
-      for (int col = 0; col < widget.parking.totalColumns; col++) {
+      for (int col = 0; col < cols; col++) {
         rowArray.add({
           'type': 'aisle',
           'label': '',
@@ -66,11 +90,12 @@ class _ParkingSpotViewerState extends State<ParkingSpotViewer> {
 
   void _populateGridWithSpots() {
     for (final spot in _parkingSpots) {
-      final row = spot['rowIndex'];
-      final col = spot['columnIndex'];
+      final rRaw = spot['rowIndex'];
+      final cRaw = spot['columnIndex'];
+      final row = (rRaw is int) ? rRaw : int.tryParse(rRaw?.toString() ?? '') ?? -1;
+      final col = (cRaw is int) ? cRaw : int.tryParse(cRaw?.toString() ?? '') ?? -1;
 
-      if (row >= 0 && row < widget.parking.totalRows &&
-          col >= 0 && col < widget.parking.totalColumns) {
+      if (row >= 0 && row < _grid.length && col >= 0 && col < _grid[row].length) {
         _grid[row][col] = {
           'type': 'spot',
           'label': spot['label'] ?? '',

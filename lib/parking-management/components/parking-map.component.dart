@@ -69,6 +69,8 @@ class _ParkingMapState extends State<ParkingMap> {
         _isParkingDataReady = true;
       });
 
+      _maybeShowListIfNoMarkers();
+
       if (_isMapReady) {
         _createParkingMarkers();
       }
@@ -97,7 +99,39 @@ class _ParkingMapState extends State<ParkingMap> {
         });
       }
     });
+  }
 
+  void _maybeShowListIfNoMarkers() {
+    // Consider coordinates valid when both lat and lng are non-zero.
+    final hasValidCoords = _parkingList.any((p) => p.lat != 0.0 || p.lng != 0.0);
+    if (!hasValidCoords && _parkingList.isNotEmpty && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showModalBottomSheet(
+          context: context,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          builder: (context) {
+            return ListView.separated(
+              padding: const EdgeInsets.all(12),
+              itemBuilder: (context, index) {
+                final parking = _parkingList[index];
+                return ListTile(
+                  title: Text(parking.name),
+                  subtitle: Text(parking.address),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showParkingDetails(parking);
+                  },
+                );
+              },
+              separatorBuilder: (_, __) => const Divider(),
+              itemCount: _parkingList.length,
+            );
+          },
+        );
+      });
+    }
   }
 
   Future<void> _startLocationTracking() async {
@@ -232,8 +266,6 @@ class _ParkingMapState extends State<ParkingMap> {
       },
     );
   }
-
-
 
   Future<void> _searchParkings() async {
     setState(() {
