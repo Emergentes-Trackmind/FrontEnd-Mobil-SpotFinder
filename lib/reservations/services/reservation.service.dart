@@ -65,4 +65,20 @@ class ReservationService extends ApiClient {
       throw Exception('Error updating reservation status: ${response.reasonPhrase}');
     }
   }
+
+  /// Fetch all reservations for a parking (used to confirm reservation creation when POST returns an error)
+  Future<List<Map<String, dynamic>>> getAllByParkingId(int parkingId) async {
+    final uri = Uri.parse('$baseUrl$resourceEndPoint/parking/$parkingId');
+    final headers = await _getHeaders();
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonResponse = json.decode(utf8.decode(response.bodyBytes));
+      return jsonResponse.cast<Map<String, dynamic>>();
+    } else if (response.statusCode == 404) {
+      return [];
+    } else {
+      throw Exception('Error loading reservations: ${response.reasonPhrase}');
+    }
+  }
 }

@@ -89,19 +89,15 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
 
   void _reserveSpot() async {
     if (_selectedSpot == null || _startTime == null || _endTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(tr('form.error_complete_fields')),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('form.error_complete_fields'))));
       return;
     }
     if (_startTime == _endTime) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(tr('form.error_same_times')),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('form.error_same_times'))));
       return;
     }
     if (_endTime!.hour < _startTime!.hour ||
@@ -113,26 +109,45 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
       return;
     }
     if (_vehiclePlate.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('form.error_enter_plate'))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('form.error_enter_plate'))));
       return;
     }
 
     // Aquí se puede hacer la llamada al backend para reservar
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final driverId = prefs.getInt('userId');
+    if (driverId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr('reservations.no_driver'))),
+      );
+      return;
+    }
     final parkingId = widget.parking.id;
-    final spotId = _selectedSpot!['id'];
+    final spotIdRaw = _selectedSpot!['id'];
+    if (spotIdRaw == null || (spotIdRaw is String && spotIdRaw.trim().isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid spot id')),
+      );
+      return;
+    }
+    // Format date as YYYY-MM-DD (backend example expects this format)
+    final dateOnly = DateTime.now().toIso8601String().split('T').first;
+
     final reservationData = {
       'driverId': driverId,
       'vehiclePlate': _vehiclePlate,
       'parkingId': parkingId,
-      'parkingSpotId': spotId.toString(),
-      'date': DateTime.now().toIso8601String(),
+      // send spot id as returned by API (could be int or string/uuid)
+      'parkingSpotId': spotIdRaw,
+      'date': dateOnly,
       'startTime': await _convertValueTimeTo24HourFormatAndString(_startTime),
       'endTime': await _convertValueTimeTo24HourFormatAndString(_endTime),
     };
+
+    // Debug: print the payload so you can check in the console what we send
+    debugPrint('Reservation payload: ${reservationData.toString()}');
     try {
       final response = await _reservationService.post(reservationData);
       if (response.containsKey('id')) {
@@ -145,9 +160,10 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ReservationPayment(
-                  userId: driverId ?? 0,
-                  reservationId: response['id'],
+                builder:
+                    (context) => ReservationPayment(
+                  userId: driverId,
+                  reservationId: (response['id'] is int) ? response['id'] as int : int.tryParse(response['id']?.toString() ?? '') ?? 0,
                   amount: _calculateTotal(),
                 ),
               ),
@@ -156,17 +172,55 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('${tr('form.error_reserving')}: $e')));
+      // If POST failed, try to confirm whether the reservation actually exists
+      try {
+        final reservations = await _reservationService.getAllByParkingId(parkingId);
+        // try to find a reservation matching driverId, spot and date
+        final found = reservations.firstWhere(
+              (r) {
+            final rDriver = r['driverId']?.toString();
+            final rSpot = r['parkingSpotId']?.toString();
+            final rDate = r['date']?.toString();
+            return rDriver == driverId.toString() && rSpot == spotIdRaw.toString() && rDate == (DateTime.now().toIso8601String().split('T').first);
+          },
+          orElse: () => {},
+        );
+
+        if (found.isNotEmpty) {
+          final resId = (found['id'] is int) ? found['id'] as int : int.tryParse(found['id']?.toString() ?? '') ?? 0;
+          SuccessDialog.show(
+            context: context,
+            message: tr('form.success_reservation'),
+            buttonLabel: tr('form.go_to_payment'),
+            icon: Icons.check_circle,
+            onClose: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ReservationPayment(
+                    userId: driverId,
+                    reservationId: resId,
+                    amount: _calculateTotal(),
+                  ),
+                ),
+              );
+            },
+          );
+          return;
+        }
+      } catch (_) {
+        // ignore and show original error below
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${tr('form.error_reserving')}: $e')),
+      );
       return;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final total = _calculateTotal();
-
     return Scaffold(
       appBar: AppBar(title: Text(widget.parking.name)),
       body: Padding(
