@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// simplified: no direct http/bytes fetching here
 import '../../shared/i18n.dart';
 import '../models/driver.model.dart';
 import '../services/driver.service.dart';
@@ -71,10 +72,21 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
     }
   }
 
+  String? _avatarPreview(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return null;
+    final s = raw.trim();
+    if (s.startsWith('http')) return s;
+    try {
+      final base = Uri.parse(DriverService().baseUrl).origin;
+      return s.startsWith('/') ? '$base$s' : '$base/$s';
+    } catch (_) {
+      return s;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // No AppBar here: header is rendered inside the body so we don't show a back arrow
       body: RefreshIndicator(
         onRefresh: _loadDriverDetails,
         child: SingleChildScrollView(
@@ -122,16 +134,13 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Header: avatar, name and email
                         Row(
                           children: [
                             GestureDetector(
                               onTap: () {
-                                // TODO: implement change profile picture (image picker)
                                 showDialog(
                                   context: context,
-                                  builder:
-                                      (ctx) => AlertDialog(
+                                  builder: (ctx) => AlertDialog(
                                     title: Text(tr('profile.change_photo_title')),
                                     content: Text(tr('profile.change_photo_content')),
                                     actions: [
@@ -143,15 +152,26 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                                   ),
                                 );
                               },
-                              child: CircleAvatar(
-                                radius: 42,
-                                backgroundColor: Colors.grey.shade200,
-                                child: const Icon(
-                                  Icons.person,
-                                  size: 44,
-                                  color: Colors.black54,
-                                ),
-                              ),
+                              child: Builder(builder: (ctx) {
+                                final preview = _avatarPreview(_driver?.avatarUrl);
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 42,
+                                      backgroundColor: Colors.grey.shade200,
+                                      backgroundImage: (preview != null) ? NetworkImage(preview) : null,
+                                      child: (preview == null)
+                                          ? const Icon(
+                                        Icons.person,
+                                        size: 44,
+                                        color: Colors.black54,
+                                      )
+                                          : null,
+                                    ),
+                                  ],
+                                );
+                              }),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
@@ -167,7 +187,6 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
-                                    // email may be in driver model under userId mapping; fetch from prefs if needed
                                     _driver!.driverId != null
                                         ? 'user#${_driver!.driverId}'
                                         : '',
@@ -180,7 +199,7 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                         ),
                         const SizedBox(height: 18),
 
-                        // Options: Datos personales, Métodos de pago, Notificaciones, Configuración
+
                         Card(
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -194,12 +213,31 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                                 subtitle: Text(tr('profile.edit_info')),
                                 trailing: const Icon(Icons.chevron_right),
                                 onTap: () async {
-                                  await Navigator.pushNamed(
+                                  final result = await Navigator.pushNamed(
                                     context,
                                     '/profile/edit',
                                   );
-                                  // refresh after edit returns
-                                  _loadDriverDetails();
+                                  // If edit returned an avatarUrl (string), refresh only avatar
+                                  if (result is String && result.isNotEmpty) {
+                                    setState(() {
+                                      if (_driver != null) _driver = Driver(
+                                        userId: _driver!.userId,
+                                        driverId: _driver!.driverId,
+                                        fullName: _driver!.fullName,
+                                        city: _driver!.city,
+                                        country: _driver!.country,
+                                        phone: _driver!.phone,
+                                        dni: _driver!.dni,
+                                        avatarUrl: result,
+                                        email: _driver!.email,
+                                        role: _driver!.role,
+                                      );
+                                    });
+                                    // avatar updated in-memory; the UI will use the returned URL
+                                  } else {
+                                    // fallback: reload whole profile
+                                    _loadDriverDetails();
+                                  }
                                 },
                               ),
                               const Divider(height: 1),
@@ -258,7 +296,10 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                             ),
                             child: Text(
                               tr('profile.logout'),
-                              style: const TextStyle(fontSize: 16, color: Colors.white),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),

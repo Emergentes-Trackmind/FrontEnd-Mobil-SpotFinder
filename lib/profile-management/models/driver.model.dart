@@ -6,6 +6,9 @@ class Driver {
   final String? country;
   final String? phone;
   final String? dni;
+  final String? avatarUrl;
+  final String? email;
+  final String? role;
 
   Driver({
     this.userId,
@@ -15,6 +18,9 @@ class Driver {
     this.country,
     this.phone,
     this.dni,
+    this.avatarUrl,
+    this.email,
+    this.role,
   });
 
   factory Driver.fromJson(Map<String, dynamic> json) {
@@ -26,6 +32,9 @@ class Driver {
       country: json['country'],
       phone: json['phone'],
       dni: json['dni'],
+      avatarUrl: json['avatarUrl'],
+      email: json['email'],
+      role: json['role'],
     );
   }
 
@@ -38,6 +47,9 @@ class Driver {
       'country': country,
       'phone': phone,
       'dni': dni,
+      'avatarUrl': avatarUrl,
+      'email': email,
+      'role': role,
     };
   }
 }
