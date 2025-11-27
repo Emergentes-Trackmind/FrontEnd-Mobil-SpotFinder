@@ -40,25 +40,22 @@ class ParkingCard extends StatelessWidget {
               ),
               // Divider
               const Divider(height: 1, color: Colors.grey, thickness: 2),
-              // Parking image
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
+              // Parking image (only show when we actually have an image URL)
+              if (parking.imageUrl.isNotEmpty)
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.network(
+                      parking.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                      const SizedBox.shrink(),
+                    ),
+                  ),
                 ),
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child:
-                  parking.imageUrl?.isNotEmpty == true
-                      ? Image.network(
-                    parking.imageUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder:
-                        (context, error, stackTrace) =>
-                        _buildDefaultImage(),
-                  )
-                      : _buildDefaultImage(),
-                ),
-              ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -90,56 +87,83 @@ class ParkingCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    // Parking address with location icon
-                    Row(
-                      children: [
-                        Icon(Icons.location_on, size: 18, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            parking.address,
-                            style: const TextStyle(color: Colors.grey),
-                          ),
+                    // Show description instead of the location icon/address
+                    if (parking.description.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          parking.description,
+                          style: const TextStyle(color: Colors.grey),
                         ),
-                      ],
-                    ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          parking.address,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      ),
                     const SizedBox(height: 12),
-                    // Parking price with money icon
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.attach_money,
-                          size: 20,
-                          color: Colors.green[700],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '\$${parking.ratePerHour.toStringAsFixed(2)}/${tr('form.hours_label')}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Rating with stars
-                    Row(
-                      children: [
-                        ...List.generate(5, (index) {
-                          return Icon(
-                            index < parking.rating.floor()
-                                ? Icons.star
-                                : Icons.star_border,
-                            color: Colors.amber,
+                    // Phone number (replace price display)
+                    if (parking.phone.isNotEmpty)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.phone,
                             size: 20,
+                            color: Colors.green[700],
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            parking.phone,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 8),
+                    // Show parking status instead of star rating
+                    Row(
+                      children: [
+                        Builder(builder: (context) {
+                          final statusText = parking.status.isNotEmpty
+                              ? parking.status
+                              : tr('parking.status_unknown');
+                          final s = statusText.toLowerCase();
+                          final isActive = s.contains('active') ||
+                              s.contains('activo') ||
+                              s == '1' ||
+                              s == 'true' ||
+                              s.contains('enabled');
+
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isActive ? Colors.green[50] : Colors.red[50],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.circle,
+                                  size: 12,
+                                  color: isActive ? Colors.green : Colors.red,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  statusText,
+                                  style: TextStyle(
+                                    color: isActive ? Colors.green[800] : Colors.red[800],
+                                  ),
+                                ),
+                              ],
+                            ),
                           );
                         }),
-                        const SizedBox(width: 8),
-                        Text(
-                          parking.rating.toStringAsFixed(1),
-                          style: const TextStyle(fontSize: 16),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -154,8 +178,14 @@ class ParkingCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           tr('parking.spots_format')
-                              .replaceFirst('{available}', parking.availableSpots.toString())
-                              .replaceFirst('{total}', parking.totalSpots.toString()),
+                              .replaceFirst(
+                            '{available}',
+                            parking.availableSpots.toString(),
+                          )
+                              .replaceFirst(
+                            '{total}',
+                            parking.totalSpots.toString(),
+                          ),
                           style: const TextStyle(color: Colors.black87),
                         ),
                       ],
@@ -208,7 +238,10 @@ class ParkingCard extends StatelessWidget {
                                   color: Colors.orange,
                                 ),
                                 const SizedBox(width: 6),
-                                Text(tr('parking.filter.open24'), style: const TextStyle(fontSize: 12)),
+                                Text(
+                                  tr('parking.filter.open24'),
+                                  style: const TextStyle(fontSize: 12),
+                                ),
                               ],
                             ),
                           ),
@@ -333,19 +366,4 @@ class ParkingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDefaultImage() {
-    return Container(
-      color: Colors.grey[300],
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.local_parking, size: 50, color: Colors.grey),
-            const SizedBox(height: 8),
-            Text("No image available", style: TextStyle(color: Colors.grey)),
-          ],
-        ),
-      ),
-    );
-  }
 }

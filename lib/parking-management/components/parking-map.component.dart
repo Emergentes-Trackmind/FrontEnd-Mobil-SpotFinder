@@ -69,7 +69,12 @@ class _ParkingMapState extends State<ParkingMap> {
         _isParkingDataReady = true;
       });
 
-      _maybeShowListIfNoMarkers();
+      // NOTE: previously we auto-opened a list of parkings when the
+      // app started (e.g. right after login). That made the modal
+      // appear unexpectedly on login. To avoid that, we do NOT
+      // automatically call _maybeShowListIfNoMarkers() here. The
+      // list will still appear when the user triggers a search or
+      // when explicit UI actions request it.
 
       if (_isMapReady) {
         _createParkingMarkers();
@@ -103,7 +108,9 @@ class _ParkingMapState extends State<ParkingMap> {
 
   void _maybeShowListIfNoMarkers() {
     // Consider coordinates valid when both lat and lng are non-zero.
-    final hasValidCoords = _parkingList.any((p) => p.lat != 0.0 || p.lng != 0.0);
+    final hasValidCoords = _parkingList.any(
+          (p) => p.lat != 0.0 || p.lng != 0.0,
+    );
     if (!hasValidCoords && _parkingList.isNotEmpty && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showModalBottomSheet(
@@ -275,23 +282,13 @@ class _ParkingMapState extends State<ParkingMap> {
     try {
       final q = _searchController.text.trim();
 
-      // If the user hasn't typed anything and no filters are active,
-      // do not perform a search or show results.
-      if (q.isEmpty && !_filterCovered && !_filter24h) {
-        setState(() {
-          _isSearching = false;
-        });
-        return;
-      }
-
       final data = await _parkingService.search(
         q: q.isEmpty ? null : q,
         covered: _filterCovered ? true : null,
         open24: _filter24h ? true : null,
       );
 
-      final results =
-      data.map<Parking>((item) => Parking.fromJson(item)).toList();
+      final results = data.map<Parking>((item) => Parking.fromJson(item)).toList();
 
       setState(() {
         _isSearching = false;
@@ -406,6 +403,7 @@ class _ParkingMapState extends State<ParkingMap> {
                                 child: TextField(
                                   controller: _searchController,
                                   textInputAction: TextInputAction.search,
+                                  onSubmitted: (_) => _searchParkings(),
                                   decoration: InputDecoration(
                                     hintText: tr('parking.search_hint'),
                                     border: InputBorder.none,
