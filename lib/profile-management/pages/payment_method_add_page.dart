@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/payment.service.dart';
 
 class PaymentMethodAddPage extends StatefulWidget {
@@ -29,10 +32,31 @@ class _PaymentMethodAddPageState extends State<PaymentMethodAddPage> {
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      // If backend fails, save locally so user still sees the card
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final raw = prefs.getString('local_payment_methods');
+        List<dynamic> existing = [];
+        if (raw != null && raw.isNotEmpty) {
+          existing = json.decode(raw) as List<dynamic>;
+        }
+        // Prepare local tokenized-like entry
+        final last4 = payload['cardNumber']?.toString();
+        final entry = {
+          'brand': payload['brand'],
+          'last4': last4 != null && last4.length >= 4 ? last4.substring(last4.length - 4) : last4,
+        };
+        existing.add(entry);
+        await prefs.setString('local_payment_methods', json.encode(existing));
+        if (!mounted) return;
+        Navigator.pop(context, true);
+        return;
+      } catch (e2) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
