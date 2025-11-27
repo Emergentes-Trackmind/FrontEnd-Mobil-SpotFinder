@@ -45,4 +45,33 @@ class AuthService {
       throw Exception('Error signing up: ${response.body}');
     }
   }
+
+
+  Future<void> forgotPassword(String email) async {
+    final uri = Uri.parse('$baseUrl/authentication/forgot-password');
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: utf8.encode(json.encode({'email': email})),
+    );
+
+    if (response.statusCode != 200) {
+      final body = response.body.isNotEmpty ? response.body : '';
+      throw Exception('Error requesting reset: ${response.statusCode} $body');
+    }
+  }
+
+  Future<void> resetPassword(String token, String newPassword) async {
+    final uri = Uri.parse('$baseUrl/authentication/reset-password');
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: utf8.encode(json.encode({'token': token, 'newPassword': newPassword})),
+    );
+
+    if (response.statusCode != 200) {
+      final body = response.body.isNotEmpty ? response.body : '';
+      throw Exception('Error resetting password: ${response.statusCode} $body');
+    }
+  }
 }

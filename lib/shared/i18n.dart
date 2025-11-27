@@ -120,10 +120,27 @@ const Map<String, Map<String, String>> _translations = {
     'form.error_enter_plate': 'Por favor ingresa la matrícula del vehículo.',
     'form.success_reservation': '¡Reserva exitosa!',
     'form.go_to_payment': 'Ir al pago',
+    // Forgot / Reset password
+    'forgot.title': 'Recuperar contraseña',
+    'forgot.email_hint': 'Correo electrónico',
+    'forgot.send': 'Enviar instrucciones',
+    'forgot.success_message':
+    'Si existe una cuenta con ese correo, recibirás instrucciones para restablecer la contraseña.',
+    'forgot.error': 'Error al solicitar restablecimiento',
+
+    'reset.title': 'Restablecer contraseña',
+    'reset.token_hint': 'Código o token recibido por correo',
+    'reset.new_password_hint': 'Nueva contraseña',
+    'reset.confirm_password_hint': 'Confirmar nueva contraseña',
+    'reset.submit': 'Cambiar contraseña',
+    'reset.success': 'Contraseña cambiada correctamente',
+    'reset.error': 'Error al cambiar contraseña',
+    'reset.error_mismatch': 'Las contraseñas no coinciden',
     'form.error_reserving': 'Error reservando plaza',
     // Payment / reservation payment
     'reservation.payment_title': 'Pago de Reserva',
-    'payment.simulated_success': 'Pago simulado localmente. Reserva confirmada.',
+    'payment.simulated_success':
+    'Pago simulado localmente. Reserva confirmada.',
     'payment.simulated_failed': 'La simulación de pago falló.',
     'payment.success': 'Pago exitoso',
     'payment.failed': 'Pago fallido',
@@ -249,10 +266,27 @@ const Map<String, Map<String, String>> _translations = {
     'form.error_enter_plate': 'Please enter your vehicle plate.',
     'form.success_reservation': 'Reservation successful!',
     'form.go_to_payment': 'Go to Payment',
+    // Forgot / Reset password
+    'forgot.title': 'Forgot password',
+    'forgot.email_hint': 'Email',
+    'forgot.send': 'Send instructions',
+    'forgot.success_message':
+    'If an account exists for that email you will receive instructions to reset your password.',
+    'forgot.error': 'Error requesting reset',
+
+    'reset.title': 'Reset password',
+    'reset.token_hint': 'Token received by email',
+    'reset.new_password_hint': 'New password',
+    'reset.confirm_password_hint': 'Confirm new password',
+    'reset.submit': 'Change password',
+    'reset.success': 'Password changed',
+    'reset.error': 'Error changing password',
+    'reset.error_mismatch': "Passwords don't match",
     'form.error_reserving': 'Error reserving spot',
     // Payment / reservation payment
     'reservation.payment_title': 'Reservation Payment',
-    'payment.simulated_success': 'Payment simulated locally. Reservation confirmed.',
+    'payment.simulated_success':
+    'Payment simulated locally. Reservation confirmed.',
     'payment.simulated_failed': 'Payment simulation failed.',
     'payment.pay_now': 'Pay Now',
     'payment.success': 'Payment successful!',

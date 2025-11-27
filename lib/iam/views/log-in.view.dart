@@ -185,8 +185,7 @@ class _LogInViewState extends State<LogInView> {
                       const Spacer(),
                       TextButton(
                         onPressed: () {
-                          // Mantener acción simple por ahora
-                          // Aquí se puede navegar a una pantalla de recuperación
+                          Navigator.pushNamed(context, '/forgot');
                         },
                         child: const Text('¿Olvidaste tu contraseña?'),
                       ),

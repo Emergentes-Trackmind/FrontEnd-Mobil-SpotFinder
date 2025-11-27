@@ -16,6 +16,9 @@ import 'package:smartparking_mobile_application/reservations/views/reservation-p
 import 'package:smartparking_mobile_application/reservations/views/reservations-screen.dart';
 import 'iam/views/log-in.view.dart';
 import 'iam/views/sign-up-driver.view.dart';
+import 'iam/views/forgot_password.view.dart';
+import 'iam/views/reset_password.view.dart';
+
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -74,6 +77,8 @@ class MyApp extends StatelessWidget {
                   );
                 },
                 '/reservations': (context) => ReservationsScreen(),
+                '/forgot': (context) => const ForgotPasswordView(),
+                '/reset-password': (context) => const ResetPasswordView(),
                 '/reviews':
                     (context) => ReviewsView(title: tr('reviews.title')),
                 '/profile': (context) => DriverDetailsPage(),
