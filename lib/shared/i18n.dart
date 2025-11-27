@@ -85,6 +85,8 @@ const Map<String, Map<String, String>> _translations = {
     'reservations.view_on_map': 'Ver en mapa',
     'reservations.cancel_label': 'Cancelar reserva',
     'reservations.canceled_snack': 'Reserva cancelada',
+    'reservations.finalize_label': 'Finalizar reserva',
+    'reservations.finalized_snack': 'Reserva finalizada',
     'reservations.error_canceling': 'Error cancelando',
     'reservation.extend_time_title': 'Extender tiempo',
     'reservation.extend_time_content':
@@ -232,6 +234,8 @@ const Map<String, Map<String, String>> _translations = {
     'reservations.view_on_map': 'View on map',
     'reservations.cancel_label': 'Cancel reservation',
     'reservations.canceled_snack': 'Reservation canceled',
+    'reservations.finalize_label': 'Finalize reservation',
+    'reservations.finalized_snack': 'Reservation finalized',
     'reservations.error_canceling': 'Error canceling',
     'reservation.extend_time_title': 'Extend time',
     'reservation.extend_time_content':

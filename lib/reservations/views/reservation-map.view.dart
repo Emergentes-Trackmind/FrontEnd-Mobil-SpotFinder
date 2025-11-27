@@ -21,9 +21,9 @@ class _ReservationMapViewState extends State<ReservationMapView> {
         'COMPLETED',
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(tr('reservations.canceled_snack'))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr('reservations.finalized_snack'))),
+      );
       // Redirect to the reservations screen after finalizing.
       // Use pushReplacementNamed to replace the current active reservation view
       // with the reservations list so the user sees their updated reservations.
@@ -31,27 +31,10 @@ class _ReservationMapViewState extends State<ReservationMapView> {
       Navigator.pushReplacementNamed(context, '/reservations');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('${tr('reservations.error_canceling')}: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${tr('reservations.error_canceling')}: $e')),
+      );
     }
-  }
-
-  void _extendTime() {
-    // Placeholder: you can open a dialog to select extra minutes/hours and call an API
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(tr('reservation.extend_time_title')),
-        content: Text(tr('reservation.extend_time_content')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(tr('common.close')),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -101,24 +84,6 @@ class _ReservationMapViewState extends State<ReservationMapView> {
                 Column(
                   children: [
                     ElevatedButton(
-                      onPressed: _extendTime,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        side: BorderSide(color: Colors.grey.shade300),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(tr('reservation.extend_time_title')),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
                       onPressed: _finalizeReservation,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -133,7 +98,7 @@ class _ReservationMapViewState extends State<ReservationMapView> {
                         ),
                         elevation: 0,
                       ),
-                      child: Text(tr('reservations.cancel_label')),
+                      child: Text(tr('reservations.finalize_label')),
                     ),
                   ],
                 ),
