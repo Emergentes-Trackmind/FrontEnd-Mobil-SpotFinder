@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:smartparking_mobile_application/reservations/services/reservation.service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/components/success-dialog.component.dart';
+import '../../shared/i18n.dart';
 
 class ReservationPayment extends StatefulWidget {
   final int userId;
@@ -24,36 +25,33 @@ class _ReservationPaymentState extends State<ReservationPayment> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _cardNumberController = TextEditingController();
   final TextEditingController _expirationDateController =
-      TextEditingController();
+  TextEditingController();
   final TextEditingController _cvvController = TextEditingController();
-  final ReservationService _reservationService = ReservationService();
-
   void _handlePayment() async {
     if (_formKey.currentState!.validate()) {
-      final paymentData = {
-        'userId': widget.userId,
-        'amount': widget.amount,
-        'nameOnCard': _nameController.text,
-        'cardNumber': _cardNumberController.text,
-        'cardExpiryDate': _expirationDateController.text,
-      };
       final reservationId = widget.reservationId;
 
       try {
-        final response = await _reservationService.createReservationPayment(paymentData, reservationId);
-        if (response.containsKey('id')) {
-          SuccessDialog.show(
-            context: context,
-            message: 'Payment successful! Your reservation has been confirmed.',
-            buttonLabel: 'Go to Home',
-            icon: Icons.check_circle,
-            routeToNavigate: '/home',
-          );
-        }
+        final prefs = await SharedPreferences.getInstance();
+        // Store a local flag indicating this reservation was "paid" locally.
+        await prefs.setBool('reservation_paid_$reservationId', true);
+        await prefs.setDouble(
+          'reservation_paid_amount_$reservationId',
+          widget.amount,
+        );
+
+        SuccessDialog.show(
+          context: context,
+          // Show a plain success message (do not reveal this is simulated)
+          message: tr('payment.success'),
+          buttonLabel: tr('nav.home'),
+          icon: Icons.check_circle,
+          routeToNavigate: '/home',
+        );
       } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${tr('payment.failed')}: $e')),
+        );
         return;
       }
     }
@@ -62,7 +60,7 @@ class _ReservationPaymentState extends State<ReservationPayment> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Reservation Payment')),
+      appBar: AppBar(title: Text(tr('reservation.payment_title'))),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -92,8 +90,8 @@ class _ReservationPaymentState extends State<ReservationPayment> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Total:',
+                    Text(
+                      '${tr('form.total')}:',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w500,
@@ -116,8 +114,8 @@ class _ReservationPaymentState extends State<ReservationPayment> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Name on Card',
+                  Text(
+                    tr('payment.name_on_card'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -137,9 +135,9 @@ class _ReservationPaymentState extends State<ReservationPayment> {
                     ),
                     validator:
                         (value) =>
-                            value == null || value.isEmpty
-                                ? 'This field is required'
-                                : null,
+                    value == null || value.isEmpty
+                        ? 'This field is required'
+                        : null,
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -149,8 +147,8 @@ class _ReservationPaymentState extends State<ReservationPayment> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Card Number',
+                  Text(
+                    tr('payment.card_number'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -173,9 +171,9 @@ class _ReservationPaymentState extends State<ReservationPayment> {
                     maxLength: 19,
                     validator:
                         (value) =>
-                            value == null || value.isEmpty
-                                ? 'This field is required'
-                                : null,
+                    value == null || value.isEmpty
+                        ? 'This field is required'
+                        : null,
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -191,8 +189,8 @@ class _ReservationPaymentState extends State<ReservationPayment> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Expiration Date',
+                        Text(
+                          tr('payment.expiration_date'),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -215,9 +213,9 @@ class _ReservationPaymentState extends State<ReservationPayment> {
                           maxLength: 5,
                           validator:
                               (value) =>
-                                  value == null || value.isEmpty
-                                      ? 'Field is required'
-                                      : null,
+                          value == null || value.isEmpty
+                              ? 'Field is required'
+                              : null,
                         ),
                       ],
                     ),
@@ -230,8 +228,8 @@ class _ReservationPaymentState extends State<ReservationPayment> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'CVV',
+                        Text(
+                          tr('payment.cvv'),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -255,9 +253,9 @@ class _ReservationPaymentState extends State<ReservationPayment> {
                           maxLength: 3,
                           validator:
                               (value) =>
-                                  value == null || value.isEmpty
-                                      ? 'Field is required'
-                                      : null,
+                          value == null || value.isEmpty
+                              ? 'Field is required'
+                              : null,
                         ),
                       ],
                     ),
@@ -284,9 +282,9 @@ class _ReservationPaymentState extends State<ReservationPayment> {
                     ),
                     elevation: 2,
                   ),
-                  label: const Text(
-                    'Pay Now',
-                    style: TextStyle(
+                  label: Text(
+                    tr('payment.pay_now'),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

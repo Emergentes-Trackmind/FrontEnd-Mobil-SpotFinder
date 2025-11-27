@@ -54,7 +54,8 @@ const Map<String, Map<String, String>> _translations = {
 
     // Profile / Driver
     'profile.change_photo_title': 'Cambiar foto de perfil',
-    'profile.change_photo_content': 'Funcionalidad para cambiar foto aún no implementada.',
+    'profile.change_photo_content':
+    'Funcionalidad para cambiar foto aún no implementada.',
     'profile.retry': 'Reintentar',
     'profile.driver_not_available': 'Detalles del conductor no disponibles.',
     'profile.personal_data': 'Datos personales',
@@ -86,12 +87,14 @@ const Map<String, Map<String, String>> _translations = {
     'reservations.canceled_snack': 'Reserva cancelada',
     'reservations.error_canceling': 'Error cancelando',
     'reservation.extend_time_title': 'Extender tiempo',
-    'reservation.extend_time_content': 'Funcionalidad de extender tiempo (placeholder).',
+    'reservation.extend_time_content':
+    'Funcionalidad de extender tiempo (placeholder).',
     'common.close': 'Cerrar',
     // Notifications (examples)
     'notifications.title': 'Notificaciones',
     'notifications.confirmed_title': 'Reserva confirmada',
-    'notifications.confirmed_subtitle': 'Tu reserva para hoy a las 10:00 está confirmada',
+    'notifications.confirmed_subtitle':
+    'Tu reserva para hoy a las 10:00 está confirmada',
     'notifications.reminder_title': 'Recordatorio',
     'notifications.reminder_subtitle': 'Tu reserva comienza en 30 minutos',
     'notifications.offer_title': 'Oferta especial',
@@ -109,13 +112,27 @@ const Map<String, Map<String, String>> _translations = {
     'form.hours_label': 'horas',
     'form.cancel': 'Cancelar',
     'form.reserve': 'Reservar',
-    'form.error_complete_fields': 'Por favor completa todos los campos antes de reservar.',
+    'form.error_complete_fields':
+    'Por favor completa todos los campos antes de reservar.',
     'form.error_same_times': 'La hora de inicio y fin no pueden ser iguales.',
-    'form.error_end_before_start': 'La hora de fin debe ser después de la hora de inicio.',
+    'form.error_end_before_start':
+    'La hora de fin debe ser después de la hora de inicio.',
     'form.error_enter_plate': 'Por favor ingresa la matrícula del vehículo.',
     'form.success_reservation': '¡Reserva exitosa!',
     'form.go_to_payment': 'Ir al pago',
     'form.error_reserving': 'Error reservando plaza',
+    // Payment / reservation payment
+    'reservation.payment_title': 'Pago de Reserva',
+    'payment.simulated_success': 'Pago simulado localmente. Reserva confirmada.',
+    'payment.simulated_failed': 'La simulación de pago falló.',
+    'payment.success': 'Pago exitoso',
+    'payment.failed': 'Pago fallido',
+    'payment.pay_now': 'Pagar ahora',
+    'payment.name_on_card': 'Nombre en la tarjeta',
+    'payment.card_number': 'Número de tarjeta',
+    'payment.expiration_date': 'Fecha de expiración',
+    'payment.cvv': 'CVV',
+    'form.field_required': 'Este campo es obligatorio',
   },
   'en': {
     // Navigation
@@ -138,7 +155,8 @@ const Map<String, Map<String, String>> _translations = {
     'reservations.upcoming': 'UPCOMING',
     'reservations.past': 'PAST',
     'reservations.no_driver': 'No driver ID found. Please log in again.',
-    'reservations.empty_hint': 'When you make your first reservation it will appear here',
+    'reservations.empty_hint':
+    'When you make your first reservation it will appear here',
     'reservations.retry': 'Retry',
     'reservations.loading_error': 'Error loading reservations',
 
@@ -166,7 +184,8 @@ const Map<String, Map<String, String>> _translations = {
 
     // Profile / Driver
     'profile.change_photo_title': 'Change profile picture',
-    'profile.change_photo_content': 'Profile picture change not implemented yet.',
+    'profile.change_photo_content':
+    'Profile picture change not implemented yet.',
     'profile.retry': 'Retry',
     'profile.driver_not_available': 'Driver details not available.',
     'profile.personal_data': 'Personal data',
@@ -198,12 +217,14 @@ const Map<String, Map<String, String>> _translations = {
     'reservations.canceled_snack': 'Reservation canceled',
     'reservations.error_canceling': 'Error canceling',
     'reservation.extend_time_title': 'Extend time',
-    'reservation.extend_time_content': 'Extend time functionality (placeholder).',
+    'reservation.extend_time_content':
+    'Extend time functionality (placeholder).',
     'common.close': 'Close',
     // Notifications (examples)
     'notifications.title': 'Notifications',
     'notifications.confirmed_title': 'Reservation confirmed',
-    'notifications.confirmed_subtitle': 'Your reservation for today at 10:00 is confirmed',
+    'notifications.confirmed_subtitle':
+    'Your reservation for today at 10:00 is confirmed',
     'notifications.reminder_title': 'Reminder',
     'notifications.reminder_subtitle': 'Your reservation starts in 30 minutes',
     'notifications.offer_title': 'Special offer',
@@ -221,14 +242,27 @@ const Map<String, Map<String, String>> _translations = {
     'form.hours_label': 'hours',
     'form.cancel': 'Cancel',
     'form.reserve': 'Reserve',
-    'form.error_complete_fields': 'Please complete all fields before reserving.',
+    'form.error_complete_fields':
+    'Please complete all fields before reserving.',
     'form.error_same_times': 'Start time and end time cannot be the same.',
     'form.error_end_before_start': 'End time must be after start time.',
     'form.error_enter_plate': 'Please enter your vehicle plate.',
     'form.success_reservation': 'Reservation successful!',
     'form.go_to_payment': 'Go to Payment',
     'form.error_reserving': 'Error reserving spot',
-  }
+    // Payment / reservation payment
+    'reservation.payment_title': 'Reservation Payment',
+    'payment.simulated_success': 'Payment simulated locally. Reservation confirmed.',
+    'payment.simulated_failed': 'Payment simulation failed.',
+    'payment.pay_now': 'Pay Now',
+    'payment.success': 'Payment successful!',
+    'payment.failed': 'Payment failed.',
+    'payment.name_on_card': 'Name on Card',
+    'payment.card_number': 'Card Number',
+    'payment.expiration_date': 'Expiration Date',
+    'payment.cvv': 'CVV',
+    'form.field_required': 'This field is required',
+  },
 };
 
 String tr(String key) {

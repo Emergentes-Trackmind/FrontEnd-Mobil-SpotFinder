@@ -34,7 +34,9 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
 
     _totalHours = (endMinutes - startMinutes) / 60.0;
 
-    return _totalHours > 0 ? _totalHours * widget.parking.ratePerHour : 0.0;
+    // Use a fixed simulated rate of S/5.00 per hour (user requested)
+    const double simulatedRatePerHour = 5.0;
+    return _totalHours > 0 ? _totalHours * simulatedRatePerHour : 0.0;
   }
 
   Future<void> _pickStartTime() async {
@@ -119,17 +121,18 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final driverId = prefs.getInt('userId');
     if (driverId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('reservations.no_driver'))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('reservations.no_driver'))));
       return;
     }
     final parkingId = widget.parking.id;
     final spotIdRaw = _selectedSpot!['id'];
-    if (spotIdRaw == null || (spotIdRaw is String && spotIdRaw.trim().isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid spot id')),
-      );
+    if (spotIdRaw == null ||
+        (spotIdRaw is String && spotIdRaw.trim().isEmpty)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Invalid spot id')));
       return;
     }
     // Format date as YYYY-MM-DD (backend example expects this format)
@@ -163,7 +166,13 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
                 builder:
                     (context) => ReservationPayment(
                   userId: driverId,
-                  reservationId: (response['id'] is int) ? response['id'] as int : int.tryParse(response['id']?.toString() ?? '') ?? 0,
+                  reservationId:
+                  (response['id'] is int)
+                      ? response['id'] as int
+                      : int.tryParse(
+                    response['id']?.toString() ?? '',
+                  ) ??
+                      0,
                   amount: _calculateTotal(),
                 ),
               ),
@@ -174,20 +183,24 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
     } catch (e) {
       // If POST failed, try to confirm whether the reservation actually exists
       try {
-        final reservations = await _reservationService.getAllByParkingId(parkingId);
-        // try to find a reservation matching driverId, spot and date
-        final found = reservations.firstWhere(
-              (r) {
-            final rDriver = r['driverId']?.toString();
-            final rSpot = r['parkingSpotId']?.toString();
-            final rDate = r['date']?.toString();
-            return rDriver == driverId.toString() && rSpot == spotIdRaw.toString() && rDate == (DateTime.now().toIso8601String().split('T').first);
-          },
-          orElse: () => {},
+        final reservations = await _reservationService.getAllByParkingId(
+          parkingId,
         );
+        // try to find a reservation matching driverId, spot and date
+        final found = reservations.firstWhere((r) {
+          final rDriver = r['driverId']?.toString();
+          final rSpot = r['parkingSpotId']?.toString();
+          final rDate = r['date']?.toString();
+          return rDriver == driverId.toString() &&
+              rSpot == spotIdRaw.toString() &&
+              rDate == (DateTime.now().toIso8601String().split('T').first);
+        }, orElse: () => {});
 
         if (found.isNotEmpty) {
-          final resId = (found['id'] is int) ? found['id'] as int : int.tryParse(found['id']?.toString() ?? '') ?? 0;
+          final resId =
+          (found['id'] is int)
+              ? found['id'] as int
+              : int.tryParse(found['id']?.toString() ?? '') ?? 0;
           SuccessDialog.show(
             context: context,
             message: tr('form.success_reservation'),
@@ -197,7 +210,8 @@ class _ParkingReservationPageState extends State<ParkingReservationPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ReservationPayment(
+                  builder:
+                      (context) => ReservationPayment(
                     userId: driverId,
                     reservationId: resId,
                     amount: _calculateTotal(),
